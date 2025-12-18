@@ -1,0 +1,46 @@
+# Copyright © 2025 OpenCHAMI a Series of LF Projects, LLC
+#
+# SPDX-License-Identifier: MIT
+
+# FROM docker.io/library/alpine:3.15
+FROM docker.io/library/golang:1.25.5-alpine3.23 AS builder
+
+# add user on alpine linux
+# RUN addgroup -g 1000 smd && \
+#     adduser -D -u 1000 -G smd smd && \
+#     chown -R smd:smd /home/smd
+# 
+# WORKDIR /home/smd
+# 
+# USER smd
+
+RUN mkdir -p /workdir
+
+WORKDIR /workdir
+
+COPY . .
+
+RUN ls && \
+    mkdir -p bin && \
+    go build -o bin/smd2 ./cmd/server
+
+# RUN set -ex && \
+#     mkdir -p bin && \
+#     go build -o bin/smd2 ./cmd/server
+
+
+
+FROM docker.io/library/alpine:3.23
+
+# add user on alpine linux
+RUN addgroup -g 1000 smd && \
+    adduser -D -u 1000 -G smd smd && \
+    chown -R smd:smd /home/smd
+
+WORKDIR /home/smd
+
+COPY --from=builder /workdir/bin/smd2 /usr/local/bin/
+
+USER smd
+
+ENTRYPOINT ["/usr/local/bin/smd2"]
