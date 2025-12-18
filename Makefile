@@ -96,3 +96,8 @@ start-compose:
 stop-compose:
 	@echo "Stoping docker compose environment for testing..."
 	$(CONTAINER_CMD) compose -p smd2 down -v
+
+
+# Restart compose environment
+.PHONY: restart-compose
+restart-compose: stop-compose start-compose
