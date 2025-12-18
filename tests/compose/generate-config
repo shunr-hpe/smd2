@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+
+# Copyright © 2025 OpenCHAMI a Series of LF Projects, LLC
+#
+# SPDX-License-Identifier: MIT
+
+generate_random_alphanumeric() {
+    local num_chars=${1:-32}
+    openssl rand -base64 "${num_chars}" | openssl dgst | cut -d' ' -f2 | fold -w "${num_chars}" | head -n 1
+}
+
+
+SCRIPT_DIR=$( dirname "$0" )
+
+export SMD_IMAGE=ghcr.io/openchami/smd:v2.19.0
+export SMD2_IMAGE=smd2:latest
+
+cat > ${SCRIPT_DIR}/.env << EOF
+SMD_IMAGE=${SMD_IMAGE}
+SMD2_IMAGE=${SMD2_IMAGE}
+
+POSTGRES_USER=ochami
+
+# Set DB passwords
+POSTGRES_PASSWORD=$(generate_random_alphanumeric 32)
+BSS_POSTGRES_PASSWORD=$(generate_random_alphanumeric 32)
+SMD_POSTGRES_PASSWORD=$(generate_random_alphanumeric 32)
+SMD2_POSTGRES_PASSWORD=$(generate_random_alphanumeric 32)
+HYDRA_POSTGRES_PASSWORD=$(generate_random_alphanumeric 32)
+HYDRA_SYSTEM_SECRET=$(generate_random_alphanumeric 32)
+EOF
+
+echo "Created ${SCRIPT_DIR}/.env"
+

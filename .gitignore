@@ -36,3 +36,5 @@ data/
 *.swp
 *.swo
 *~
+
+**/.env

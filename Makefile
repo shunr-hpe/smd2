@@ -38,15 +38,61 @@ clean:
 	rm -rf data
 	rm -f coverage.out coverage.html
 
-# Clean build artifacts
+# Build container image
 .PHONY: image
 image: build
 	@echo "Building container image..."
 	$(CONTAINER_CMD) build -t $(BINARY_NAME):latest .
 
 
-# Clean build artifacts
+# Build binary and alpine based image
 .PHONY: image-alpine
 image-alpine:
 	@echo "Building container alpine image..."
 	$(CONTAINER_CMD) build -f Dockerfile-alpine -t $(BINARY_NAME):latest .
+
+
+# Build test container image
+.PHONY: test-image
+test-image:
+	@echo "Building test container image..."
+	$(CONTAINER_CMD) build -t $(BINARY_NAME)-test:latest tests/pytests
+
+
+# Start compose environment
+.PHONY: start-compose
+start-compose:
+	@echo "Starting docker compose environment for testing...";
+	tests/compose/generate-config;
+	cd tests/compose && $(CONTAINER_CMD) compose -p smd2 -f networks.yml -f postgres.yml -f smd.yml -f smd2.yml -f computes.yml up -d;
+
+# todo get if else working in the start-compose target
+# # Start compose environment
+# .PHONY: start-compose
+# start-compose:
+# 	SMD_COMPOSE_PROJECT=$(shell docker compose ls -q | grep '^smd2$')
+# 	ifeq ($(SMD_COMPOSE_PROJECT), "smd2")
+# 		@echo "docker compose environment is already running";
+# 	else
+# 		@echo "Starting docker compose environment for testing...";
+# 		tests/compose/generate-config;
+# 		cd tests/compose && $(CONTAINER_CMD) compose -p smd2 -f networks.yml -f postgres.yml -f smd.yml -f computes.yml up -d;
+# 	endif
+
+# # Start compose environment
+# .PHONY: start-compose
+# start-compose:
+# 	@if [ "$(shell docker compose ls -q | grep '^smd2$')" = "smd2" ]; then \
+# 		echo "docker compose environment is already running";\
+# 	else \
+# 		echo "Starting docker compose environment for testing...";\
+# 		tests/compose/generate-config;\
+# 		cd tests/compose && $(CONTAINER_CMD) compose -p smd2 -f networks.yml -f postgres.yml -f smd.yml -f computes.yml up -d;\
+# 	fi
+
+
+# Stop compose environment
+.PHONY: stop-compose
+stop-compose:
+	@echo "Stoping docker compose environment for testing..."
+	$(CONTAINER_CMD) compose -p smd2 down -v
