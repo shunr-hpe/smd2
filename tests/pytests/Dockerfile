@@ -8,6 +8,8 @@ RUN apk update && \
     apk add --no-cache \
         python3-dev \
         pytest \
+        curl \
+        jq \
         bash
 
 COPY requirements.txt .
