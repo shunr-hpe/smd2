@@ -20,4 +20,4 @@ WORKDIR /app
 
 COPY . .
 
-CMD [ "/bin/sh", "-o", "vi" ]
+CMD [ "/usr/local/bin/pytest", "/app" ]
