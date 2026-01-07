@@ -1,0 +1,57 @@
+services:
+  rf-x0c0s1b0:
+    container_name: rf-x0c0s1b0
+    hostname: x0c0s1b0
+    image: ghcr.io/openchami/csm-rie:latest
+    environment:
+      # Bard Peak - 1 node
+      - MOCKUPFOLDER=EX235a
+      - MAC_SCHEMA=Mountain
+      - XNAME=x0c0s1b0
+      - PORT=443
+    networks:
+      internal:
+        aliases:
+          - x0c0s1b0
+  rf-x0c0s2b0:
+    container_name: rf-x0c0s2b0
+    hostname: x0c0s2b0
+    image: ghcr.io/openchami/csm-rie:latest
+    environment:
+      # Grizzly Peak - 2 nodes
+      - MOCKUPFOLDER=EX235n
+      - MAC_SCHEMA=Mountain
+      - XNAME=x0c0s2b0
+      - PORT=443
+    networks:
+      internal:
+        aliases:
+          - x0c0s2b0
+  rf-x0c0s3b0:
+    container_name: rf-x0c0s3b0
+    hostname: x0c0s3b0
+    image: ghcr.io/openchami/csm-rie:latest
+    environment:
+      # Castle - 2 nodes
+      - MOCKUPFOLDER=EX420
+      - MAC_SCHEMA=Mountain
+      - XNAME=x0c0s3b0
+      - PORT=443
+    networks:
+      internal:
+        aliases:
+          - x0c0s3b0
+  rf-x0c0s4b0:
+    container_name: rf-x0c0s4b0
+    hostname: x0c0s4b0
+    image: ghcr.io/openchami/csm-rie:latest
+    environment:
+      # Windom - 2 nodes
+      - MOCKUPFOLDER=EX425
+      - MAC_SCHEMA=Mountain
+      - XNAME=x0c0s4b0
+      - PORT=443
+    networks:
+      internal:
+        aliases:
+          - x0c0s4b0

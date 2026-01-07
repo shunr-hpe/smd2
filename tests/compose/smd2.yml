@@ -1,0 +1,24 @@
+services:
+###
+# SMD2 Containers
+###
+  smd2:
+    image: ${SMD2_IMAGE}
+    container_name: smd2
+    hostname: smd2
+    environment:
+      # these environment variables are not currently used,
+      # but may be needed once smd2 is switched to use postgres
+      - SMD_DBHOST=postgres
+      - SMD_DBPORT=5432
+      - SMD_DBNAME=smd2ds
+      - SMD_DBUSER=smd2-user
+      - SMD_DBPASS=${SMD2_POSTGRES_PASSWORD} # Set in .env file
+      - SMD_DBOPTS=sslmode=disable
+      - SMD_JWKS_URL=
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - internal
+

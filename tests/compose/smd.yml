@@ -1,0 +1,53 @@
+services:
+###
+# SMD Init and Server Containers
+###
+  # sets up postgres for SMD data
+  smd-init:
+    image: ${SMD_IMAGE}
+    container_name: smd-init
+    hostname: smd-init
+    environment:
+      - SMD_DBHOST=postgres
+      - SMD_DBPORT=5432
+      - SMD_DBNAME=hmsds
+      - SMD_DBUSER=smd-user
+      - SMD_DBPASS=${SMD_POSTGRES_PASSWORD} # Set in .env file
+      - SMD_DBOPTS=sslmode=disable
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - internal
+    entrypoint:
+      - /smd-init
+  # SMD
+  smd:
+    image: ${SMD_IMAGE}
+    container_name: smd
+    hostname: smd
+    environment:
+      - SMD_DBHOST=postgres
+      - SMD_DBPORT=5432
+      - SMD_DBNAME=hmsds
+      - SMD_DBUSER=smd-user
+      - SMD_DBPASS=${SMD_POSTGRES_PASSWORD} # Set in .env file
+      - SMD_DBOPTS=sslmode=disable
+      - SMD_JWKS_URL=
+      - ENABLE_DISCOVERY=true
+    depends_on:
+      postgres:
+        condition: service_healthy
+      smd-init:
+        condition: service_completed_successfully
+    #ports:
+    #  - "27779:27779"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:27779/hsm/v2/service/ready"]
+      interval: 5s
+      retries: 60
+      start_period: 20s
+      timeout: 10s
+    networks:
+      - internal
+
