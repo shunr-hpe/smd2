@@ -36,4 +36,17 @@ func RegisterSmdV2Routes(r chi.Router) {
 		// Patch /State/Components/BulkRole
 		// Patch /State/Components/BulkNID
 	})
+	// ComponentEndpoint routes
+	r.Route("/hsm/v2/Inventory/ComponentEndpoints", func(r chi.Router) {
+		r.Get("/", GetComponentEndpointsSmdV2)
+		r.Post("/", CreateComponentEndpointSmdV2)
+		// todo (optional)
+		// DELETE /Inventory/ComponentEndpoints
+		// r.Delete("/", DeleteAllComponentSmdV2) // todo (smd has it but it is probably not needed)
+		r.Route("/{id}", func(r chi.Router) {
+			r.Get("/", GetComponentEndpointSmdV2)
+			r.Put("/", UpdateComponentEndpointSmdV2)
+			r.Delete("/", DeleteComponentEndpointSmdV2)
+		})
+	})
 }

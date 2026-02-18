@@ -10,3 +10,7 @@ import (
 type ComponentArray struct {
 	Components []*v1.ComponentSpec `json:"Components"`
 }
+
+type ComponentEndpointArray struct {
+	ComponentEndpoints []*v1.ComponentEndpointSpec `json:"ComponentEndpoints"`
+}
