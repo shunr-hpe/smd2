@@ -5,10 +5,12 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	v1 "github.com/OpenCHAMI/smd2/apis/smd2.openchami.org/v1"
@@ -147,6 +149,16 @@ func CreateRedfishEndpointSmdV2(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// If V2 format: create Components, ComponentEndpoints, and EthernetInterfaces
+	// for every entry in the Systems and Managers arrays, mirroring what
+	// parseRedfishEndpointDataV2 does in OpenCHAMI/smd.
+	if isV2Format {
+		if err := createV2SubResources(r.Context(), req, v2req, versionCtx); err != nil {
+			// Log but do not fail — the RedfishEndpoint itself was saved successfully.
+			fmt.Printf("Warning: CreateRedfishEndpointSmdV2: failed to create V2 sub-resources for %s: %v\n", req.ID, err)
+		}
+	}
+
 	// Publish resource created event
 	if err := events.PublishResourceCreated(r.Context(), "RedfishEndpoint", redfishEndpoint.Metadata.UID, redfishEndpoint.Metadata.Name, redfishEndpoint); err != nil {
 		// Log the error but don't fail the request - events are non-critical
@@ -258,4 +270,221 @@ func DeleteRedfishEndpointV2(w http.ResponseWriter, r *http.Request) {
 			UID:     "",
 		})
 	}
+}
+
+// createV2SubResources processes the Systems and Managers arrays in a V2-format POST body,
+// creating Component, ComponentEndpoint, and EthernetInterface resources for each entry.
+// This mirrors the behaviour of parseRedfishEndpointDataV2 in OpenCHAMI/smd.
+//
+// For each Manager:
+//   - Creates a NodeBMC Component (ID = endpoint.ID)
+//   - Creates a Manager ComponentEndpoint (ComponentEndpointType "ComponentEndpointBMC")
+//   - Creates an EthernetInterface for every manager ethernet interface that has a MAC address
+//
+// For each System (index i → suffix "n<i>"):
+//   - Creates a Node Component (ID = endpoint.ID + "n<i>")
+//   - Creates a ComputerSystem ComponentEndpoint (ComponentEndpointType "ComponentEndpointComputerSystem")
+//   - Creates an EthernetInterface for every system ethernet interface that has a MAC address
+func createV2SubResources(
+	ctx context.Context,
+	endpoint v1.RedfishEndpointSpec,
+	v2req RedfishEndpointV2Request,
+	versionCtx *versioning.VersionContext,
+) error {
+	now := time.Now()
+
+	// Build []*v1.EthernetNICInfo from V2 ethernet interface entries.
+	nicInfoFromEths := func(eths []RedfishEndpointV2EthernetInterface) []*v1.EthernetNICInfo {
+		out := make([]*v1.EthernetNICInfo, 0, len(eths))
+		for _, eth := range eths {
+			eth := eth // capture
+			out = append(out, &v1.EthernetNICInfo{
+				InterfaceEnabled: &eth.Enabled,
+				RedfishId:        eth.URI,
+				Oid:              eth.URI,
+				Description:      eth.Description,
+				MACAddress:       eth.MAC,
+			})
+		}
+		return out
+	}
+
+	// saveEthInterfaces creates EthernetInterface resources from V2 ethernet entries.
+	saveEthInterfaces := func(compID, compType string, eths []RedfishEndpointV2EthernetInterface) error {
+		for _, eth := range eths {
+			if eth.MAC == "" {
+				continue
+			}
+			macID := strings.ReplaceAll(strings.ToLower(eth.MAC), ":", "")
+			uid, err := resource.GenerateUIDForResource("EthernetInterface")
+			if err != nil {
+				return fmt.Errorf("failed to generate UID for EthernetInterface %s: %w", macID, err)
+			}
+			ei := &v1.EthernetInterface{
+				APIVersion: versionCtx.ServeVersion,
+				Kind:       "EthernetInterface",
+				Spec: v1.EthernetInterfaceSpec{
+					ID:      macID,
+					MACAddr: eth.MAC,
+					IPAddr:  eth.IP,
+					CompID:  compID,
+					Type:    compType,
+				},
+			}
+			ei.Metadata.UID = uid
+			ei.Metadata.Name = macID
+			ei.Metadata.CreatedAt = now
+			ei.Metadata.UpdatedAt = now
+			ei.Metadata.Labels = make(map[string]string)
+			ei.Metadata.Annotations = make(map[string]string)
+			if err := storage.SaveEthernetInterface(ctx, ei); err != nil {
+				return fmt.Errorf("failed to save EthernetInterface %s: %w", macID, err)
+			}
+		}
+		return nil
+	}
+
+	// ── Managers → NodeBMC Component + Manager ComponentEndpoint + EthernetInterfaces ──
+	for _, manager := range v2req.Managers {
+		compID := endpoint.ID
+
+		// Component (NodeBMC)
+		compUID, err := resource.GenerateUIDForResource("Component")
+		if err != nil {
+			return fmt.Errorf("failed to generate UID for NodeBMC Component %s: %w", compID, err)
+		}
+		enabled := true
+		comp := &v1.Component{
+			APIVersion: versionCtx.ServeVersion,
+			Kind:       "Component",
+			Spec: v1.ComponentSpec{
+				ID:      compID,
+				Type:    "NodeBMC",
+				Enabled: &enabled,
+			},
+		}
+		comp.Metadata.UID = compUID
+		comp.Metadata.Name = compID
+		comp.Metadata.CreatedAt = now
+		comp.Metadata.UpdatedAt = now
+		comp.Metadata.Labels = make(map[string]string)
+		comp.Metadata.Annotations = make(map[string]string)
+		if err := storage.SaveComponent(ctx, comp); err != nil {
+			return fmt.Errorf("failed to save NodeBMC Component %s: %w", compID, err)
+		}
+
+		// ComponentEndpoint (Manager / BMC)
+		cepUID, err := resource.GenerateUIDForResource("ComponentEndpoint")
+		if err != nil {
+			return fmt.Errorf("failed to generate UID for Manager ComponentEndpoint %s: %w", compID, err)
+		}
+		cep := &v1.ComponentEndpoint{
+			APIVersion: versionCtx.ServeVersion,
+			Kind:       "ComponentEndpoint",
+			Spec: v1.ComponentEndpointSpec{
+				ID:                    compID,
+				Type:                  "NodeBMC",
+				RedfishType:           "Manager",
+				RedfishSubtype:        manager.Type,
+				UUID:                  manager.UUID,
+				OdataID:               manager.URI,
+				RfEndpointID:          endpoint.ID,
+				RedfishEndpointFQDN:   endpoint.FQDN,
+				URL:                   manager.URI,
+				ComponentEndpointType: "ComponentEndpointBMC",
+				Enabled:               true,
+				RedfishManagerInfo: &v1.ComponentManagerInfo{
+					Name:       manager.Name,
+					EthNICInfo: nicInfoFromEths(manager.EthernetInterfaces),
+				},
+			},
+		}
+		cep.Metadata.UID = cepUID
+		cep.Metadata.Name = compID
+		cep.Metadata.CreatedAt = now
+		cep.Metadata.UpdatedAt = now
+		cep.Metadata.Labels = make(map[string]string)
+		cep.Metadata.Annotations = make(map[string]string)
+		if err := storage.SaveComponentEndpoint(ctx, cep); err != nil {
+			return fmt.Errorf("failed to save Manager ComponentEndpoint %s: %w", compID, err)
+		}
+
+		// EthernetInterfaces for this manager
+		if err := saveEthInterfaces(compID, "NodeBMC", manager.EthernetInterfaces); err != nil {
+			return err
+		}
+	}
+
+	// ── Systems → Node Component + ComputerSystem ComponentEndpoint + EthernetInterfaces ──
+	for i, system := range v2req.Systems {
+		nodeID := fmt.Sprintf("%sn%d", endpoint.ID, i)
+
+		// Component (Node)
+		compUID, err := resource.GenerateUIDForResource("Component")
+		if err != nil {
+			return fmt.Errorf("failed to generate UID for Node Component %s: %w", nodeID, err)
+		}
+		enabled := true
+		comp := &v1.Component{
+			APIVersion: versionCtx.ServeVersion,
+			Kind:       "Component",
+			Spec: v1.ComponentSpec{
+				ID:      nodeID,
+				Type:    "Node",
+				Enabled: &enabled,
+			},
+		}
+		comp.Metadata.UID = compUID
+		comp.Metadata.Name = nodeID
+		comp.Metadata.CreatedAt = now
+		comp.Metadata.UpdatedAt = now
+		comp.Metadata.Labels = make(map[string]string)
+		comp.Metadata.Annotations = make(map[string]string)
+		if err := storage.SaveComponent(ctx, comp); err != nil {
+			return fmt.Errorf("failed to save Node Component %s: %w", nodeID, err)
+		}
+
+		// ComponentEndpoint (ComputerSystem)
+		cepUID, err := resource.GenerateUIDForResource("ComponentEndpoint")
+		if err != nil {
+			return fmt.Errorf("failed to generate UID for System ComponentEndpoint %s: %w", nodeID, err)
+		}
+		cep := &v1.ComponentEndpoint{
+			APIVersion: versionCtx.ServeVersion,
+			Kind:       "ComponentEndpoint",
+			Spec: v1.ComponentEndpointSpec{
+				ID:                    nodeID,
+				Type:                  "Node",
+				RedfishType:           "ComputerSystem",
+				RedfishSubtype:        system.SystemType,
+				UUID:                  system.UUID,
+				OdataID:               system.URI,
+				RfEndpointID:          endpoint.ID,
+				RedfishEndpointFQDN:   endpoint.FQDN,
+				URL:                   system.URI,
+				ComponentEndpointType: "ComponentEndpointComputerSystem",
+				Enabled:               true,
+				RedfishSystemInfo: &v1.ComponentSystemInfo{
+					Name:       system.Name,
+					EthNICInfo: nicInfoFromEths(system.EthernetInterfaces),
+				},
+			},
+		}
+		cep.Metadata.UID = cepUID
+		cep.Metadata.Name = nodeID
+		cep.Metadata.CreatedAt = now
+		cep.Metadata.UpdatedAt = now
+		cep.Metadata.Labels = make(map[string]string)
+		cep.Metadata.Annotations = make(map[string]string)
+		if err := storage.SaveComponentEndpoint(ctx, cep); err != nil {
+			return fmt.Errorf("failed to save System ComponentEndpoint %s: %w", nodeID, err)
+		}
+
+		// EthernetInterfaces for this system
+		if err := saveEthInterfaces(nodeID, "Node", system.EthernetInterfaces); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
