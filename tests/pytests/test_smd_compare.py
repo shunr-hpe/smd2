@@ -74,6 +74,15 @@ def discover_hardware():
                     break
             time.sleep(1)
 
+    replicate_components()
+    replicate_component_endpoints()
+
+    yield
+
+    # tear down
+
+
+def replicate_components():
     response = requests.get(f"{smd_base_url}/v2/State/Components")
     if not response.ok:
         print_response("GET", response)
@@ -85,12 +94,20 @@ def discover_hardware():
         print_response("POST", response)
 
 
-    yield
+def replicate_component_endpoints():
+    response = requests.get(f"{smd_base_url}/v2/Inventory/ComponentEndpoints")
+    if not response.ok:
+        print_response("GET", response)
+    smd_components = json.loads(response.text)
 
-    # tear down
+    print("POST ComponentEndpoints to SMD2")
+    response = requests.post(f"{smd2_base_url}/v2/Inventory/ComponentEndpoints", json=smd_components)
+    if not response.ok:
+        print_response("POST", response)
 
 
-def test_compare(discover_hardware):
+def test_compare_components(discover_hardware):
+    # /State/Components
     response = requests.get(f"{smd_base_url}/v2/State/Components")
     if response.status_code != 200:
         print_response("GET", response)
@@ -108,6 +125,25 @@ def test_compare(discover_hardware):
     diff = compare(smd_components.get("Components"), smd2_components.get("Components"))
     if diff:
         pytest.fail(f"The Component list from SMD does not match the list from SMD2. diff: {diff}")
+
+    # /Inventory/ComponentEndpoints
+    response = requests.get(f"{smd_base_url}/v2/Inventory/ComponentEndpoints")
+    if response.status_code != 200:
+        print_response("GET", response)
+        pytest.fail(f" get {response.url}, code: {response.status_code}")
+
+    smd_component_endpoints = json.loads(response.text)
+
+    response = requests.get(f"{smd2_base_url}/v2/Inventory/ComponentEndpoints")
+    if not response.ok:
+        print_response("GET", response)
+        pytest.fail(f"get {response.url}, code: {response.status_code}")
+
+    smd2_component_endpoints = json.loads(response.text)
+
+    diff = compare(smd_component_endpoints.get("ComponentEndpoints"), smd2_component_endpoints.get("ComponentEndpoints"))
+    if diff:
+        pytest.fail(f"The ComponentEndpoint list from SMD does not match the list from SMD2. diff: {diff}")
 
 
 def get_discovered_nodes(redfishEndpoints):

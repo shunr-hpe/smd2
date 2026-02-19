@@ -108,6 +108,7 @@ func CreateComponentEndpointSmdV2(w http.ResponseWriter, r *http.Request) {
 		}
 		// Initialize metadata from request
 		componentEndpoint.Metadata.UID = uid
+		componentEndpoint.Metadata.Name = c.ID
 		now := time.Now()
 		componentEndpoint.Metadata.CreatedAt = now
 		componentEndpoint.Metadata.UpdatedAt = now

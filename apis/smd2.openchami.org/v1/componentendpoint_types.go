@@ -19,10 +19,19 @@ type ComponentEndpointSpec struct {
 	Description string `json:"description,omitempty" validate:"max=200"`
 	ID          string `json:"ID"`
 
-	Type                string `json:"Type"`
-	RedfishEndpointFQDN string `json:"RedfishEndpointFQDN,omitempty"`
+	Type           string `json:"Type"`
+	Domain         string `json:"Domain,omitempty"`
+	FQDN           string `json:"FQDN,omitempty"`
+	RedfishType    string `json:"RedfishType"`
+	RedfishSubtype string `json:"RedfishSubtype"`
+	MACAddr        string `json:"MACAddr,omitempty"`
+	UUID           string `json:"UUID,omitempty"`
+	OdataID        string `json:"OdataID"`
+	RfEndpointID   string `json:"RedfishEndpointID"`
 
-	URL                   string `json:"URL,omitempty"`
+	Enabled               bool   `json:"Enabled"`
+	RedfishEndpointFQDN   string `json:"RedfishEndpointFQDN,omitempty"`
+	URL                   string `json:"RedfishURL,omitempty"`
 	ComponentEndpointType string `json:"ComponentEndpointType"`
 
 	RedfishChassisInfo *ComponentChassisInfo `json:"RedfishChassisInfo,omitempty"`
