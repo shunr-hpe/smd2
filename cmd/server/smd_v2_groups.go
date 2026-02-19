@@ -100,24 +100,17 @@ func GetGroupSmdV2(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	groups, err := storage.LoadAllGroups(r.Context())
+	group, err := storage.LoadGroupByLabel(r.Context(), label)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to load groups: %w", err))
+		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to load group %s: %w", label, err))
 		return
 	}
-	var groupSpec *v1.GroupSpec
-	for _, g := range groups {
-		if g.Spec.Label == label {
-			groupSpec = &g.Spec
-			break
-		}
-	}
 
-	if groupSpec == nil {
+	if group == nil {
 		respondError(w, http.StatusNotFound, fmt.Errorf("group not found: %s", label))
 		return
 	}
-	respondJSON(w, http.StatusOK, groupSpec)
+	respondJSON(w, http.StatusOK, &group.Spec)
 }
 
 // UpdateGroupSmdV2 updates the spec of an existing Group resource
@@ -129,17 +122,10 @@ func UpdateGroupSmdV2(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	groups, err := storage.LoadAllGroups(r.Context())
+	group, err := storage.LoadGroupByLabel(r.Context(), label)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to load groups: %w", err))
+		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to load group %s: %w", label, err))
 		return
-	}
-	var group *v1.Group
-	for _, g := range groups {
-		if g.Spec.Label == label {
-			group = g
-			break
-		}
 	}
 
 	if group == nil {
@@ -189,17 +175,10 @@ func DeleteGroupSmdV2(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	groups, err := storage.LoadAllGroups(r.Context())
+	group, err := storage.LoadGroupByLabel(r.Context(), label)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to load groups: %w", err))
+		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to load group %s: %w", label, err))
 		return
-	}
-	var group *v1.Group
-	for _, g := range groups {
-		if g.Spec.Label == label {
-			group = g
-			break
-		}
 	}
 
 	if group != nil {

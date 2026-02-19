@@ -108,24 +108,17 @@ func GetEthernetInterfaceSmdV2(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ethernetInterfaces, err := storage.LoadAllEthernetInterfaces(r.Context())
+	ethernetInterface, err := storage.LoadEthernetInterfaceByID(r.Context(), id)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to load ethernetinterfaces: %w", err))
+		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to load ethernetinterface %s: %w", id, err))
 		return
-	}
-	var ethernetInterface *v1.EthernetInterfaceSpec
-	for _, e := range ethernetInterfaces {
-		if e.Spec.ID == id {
-			ethernetInterface = &e.Spec
-			break
-		}
 	}
 
 	if ethernetInterface == nil {
 		respondError(w, http.StatusNotFound, fmt.Errorf("ethernetinterface not found: %s", id))
 		return
 	}
-	respondJSON(w, http.StatusOK, ethernetInterface)
+	respondJSON(w, http.StatusOK, &ethernetInterface.Spec)
 }
 
 // UpdateEthernetInterfaceSmdV2 updates the spec of an existing EthernetInterface resource
@@ -137,17 +130,10 @@ func UpdateEthernetInterfaceSmdV2(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ethernetInterfaces, err := storage.LoadAllEthernetInterfaces(r.Context())
+	ethernetInterface, err := storage.LoadEthernetInterfaceByID(r.Context(), id)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to load ethernetinterfaces: %w", err))
+		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to load ethernetinterface %s: %w", id, err))
 		return
-	}
-	var ethernetInterface *v1.EthernetInterface
-	for _, e := range ethernetInterfaces {
-		if e.Spec.ID == id {
-			ethernetInterface = e
-			break
-		}
 	}
 
 	if ethernetInterface == nil {
@@ -197,17 +183,10 @@ func DeleteEthernetInterfaceSmdV2(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ethernetInterfaces, err := storage.LoadAllEthernetInterfaces(r.Context())
+	ethernetInterface, err := storage.LoadEthernetInterfaceByID(r.Context(), id)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to load ethernetinterfaces: %w", err))
+		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to load ethernetinterface %s: %w", id, err))
 		return
-	}
-	var ethernetInterface *v1.EthernetInterface
-	for _, e := range ethernetInterfaces {
-		if e.Spec.ID == id {
-			ethernetInterface = e
-			break
-		}
 	}
 
 	if ethernetInterface != nil {

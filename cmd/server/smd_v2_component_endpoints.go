@@ -54,24 +54,17 @@ func GetComponentEndpointSmdV2(w http.ResponseWriter, r *http.Request) {
 	// Authorization: Add custom middleware in routes.go or implement checks here
 	// Example: if !authorized(r) { respondError(w, http.StatusUnauthorized, fmt.Errorf("unauthorized")); return }
 
-	componentEndpoints, err := storage.LoadAllComponentEndpoints(r.Context())
+	componentEndpoint, err := storage.LoadComponentEndpointByID(r.Context(), id)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to load componentEndpoints: %w", err))
+		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to load componentEndpoint %s: %w", id, err))
 		return
-	}
-	var componentEndpoint *v1.ComponentEndpointSpec
-	for _, c := range componentEndpoints {
-		if c.Spec.ID == id {
-			componentEndpoint = &c.Spec
-			break
-		}
 	}
 
 	if componentEndpoint == nil {
 		respondError(w, http.StatusNotFound, fmt.Errorf("componentEndpoint not found: %s", id))
 		return
 	}
-	respondJSON(w, http.StatusOK, componentEndpoint)
+	respondJSON(w, http.StatusOK, &componentEndpoint.Spec)
 }
 
 // CreateComponentEndpoint creates a new ComponentEndpoint resource
@@ -155,17 +148,10 @@ func UpdateComponentEndpointSmdV2(w http.ResponseWriter, r *http.Request) {
 		respondError(w, http.StatusBadRequest, fmt.Errorf("ComponentEndpoint ID is required"))
 		return
 	}
-	componentEps, err := storage.LoadAllComponentEndpoints(r.Context())
+	componentEndpoint, err := storage.LoadComponentEndpointByID(r.Context(), id)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to load components: %w", err))
+		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to load componentEndpoint %s: %w", id, err))
 		return
-	}
-	var componentEndpoint *v1.ComponentEndpoint
-	for _, c := range componentEps {
-		if c.Spec.ID == id {
-			componentEndpoint = c
-			break
-		}
 	}
 
 	if componentEndpoint == nil {
@@ -225,17 +211,10 @@ func DeleteComponentEndpointSmdV2(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	components, err := storage.LoadAllComponentEndpoints(r.Context())
+	componentEndpoint, err := storage.LoadComponentEndpointByID(r.Context(), id)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to load component endpoints: %w", err))
+		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to load componentEndpoint %s: %w", id, err))
 		return
-	}
-	var componentEndpoint *v1.ComponentEndpoint
-	for _, c := range components {
-		if c.Spec.ID == id {
-			componentEndpoint = c
-			break
-		}
 	}
 
 	if componentEndpoint != nil {

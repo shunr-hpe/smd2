@@ -43,24 +43,17 @@ func GetServiceEndpointSmdV2(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	serviceEndpoints, err := storage.LoadAllServiceEndpoints(r.Context())
+	serviceEndpoint, err := storage.LoadServiceEndpointByID(r.Context(), id)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to load serviceendpoints: %w", err))
+		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to load serviceendpoint %s: %w", id, err))
 		return
-	}
-	var serviceEndpoint *v1.ServiceEndpointSpec
-	for _, s := range serviceEndpoints {
-		if s.Spec.RfEndpointID == id {
-			serviceEndpoint = &s.Spec
-			break
-		}
 	}
 
 	if serviceEndpoint == nil {
 		respondError(w, http.StatusNotFound, fmt.Errorf("serviceendpoint not found: %s", id))
 		return
 	}
-	respondJSON(w, http.StatusOK, serviceEndpoint)
+	respondJSON(w, http.StatusOK, &serviceEndpoint.Spec)
 }
 
 // CreateServiceEndpointSmdV2 creates one or more new ServiceEndpoint resources
@@ -132,17 +125,10 @@ func UpdateServiceEndpointSmdV2(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	serviceEndpoints, err := storage.LoadAllServiceEndpoints(r.Context())
+	serviceEndpoint, err := storage.LoadServiceEndpointByID(r.Context(), id)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to load serviceendpoints: %w", err))
+		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to load serviceendpoint %s: %w", id, err))
 		return
-	}
-	var serviceEndpoint *v1.ServiceEndpoint
-	for _, s := range serviceEndpoints {
-		if s.Spec.RfEndpointID == id {
-			serviceEndpoint = s
-			break
-		}
 	}
 
 	if serviceEndpoint == nil {
@@ -192,17 +178,10 @@ func DeleteServiceEndpointSmdV2(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	serviceEndpoints, err := storage.LoadAllServiceEndpoints(r.Context())
+	serviceEndpoint, err := storage.LoadServiceEndpointByID(r.Context(), id)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to load serviceendpoints: %w", err))
+		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to load serviceendpoint %s: %w", id, err))
 		return
-	}
-	var serviceEndpoint *v1.ServiceEndpoint
-	for _, s := range serviceEndpoints {
-		if s.Spec.RfEndpointID == id {
-			serviceEndpoint = s
-			break
-		}
 	}
 
 	if serviceEndpoint != nil {

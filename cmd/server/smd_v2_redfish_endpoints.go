@@ -54,24 +54,17 @@ func GetRedfishEndpointSmdV2(w http.ResponseWriter, r *http.Request) {
 	// Authorization: Add custom middleware in routes.go or implement checks here
 	// Example: if !authorized(r) { respondError(w, http.StatusUnauthorized, fmt.Errorf("unauthorized")); return }
 
-	redfishEndpoints, err := storage.LoadAllRedfishEndpoints(r.Context())
+	redfishEndpoint, err := storage.LoadRedfishEndpointByID(r.Context(), id)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to load redfishEndpoints: %w", err))
+		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to load redfishEndpoint %s: %w", id, err))
 		return
-	}
-	var redfishEndpoint *v1.RedfishEndpointSpec
-	for _, re := range redfishEndpoints {
-		if re.Spec.ID == id {
-			redfishEndpoint = &re.Spec
-			break
-		}
 	}
 
 	if redfishEndpoint == nil {
 		respondError(w, http.StatusNotFound, fmt.Errorf("redfishEndpoint not found: %s", id))
 		return
 	}
-	respondJSON(w, http.StatusOK, redfishEndpoint)
+	respondJSON(w, http.StatusOK, &redfishEndpoint.Spec)
 }
 
 // CreateRedfishEndpointSmdV2 creates a new RedfishEndpoint resource
@@ -149,17 +142,10 @@ func UpdateRedfishEndpointV2(w http.ResponseWriter, r *http.Request) {
 		respondError(w, http.StatusBadRequest, fmt.Errorf("RedfishEndpoint ID is required"))
 		return
 	}
-	redfishEps, err := storage.LoadAllRedfishEndpoints(r.Context())
+	redfishEndpoint, err := storage.LoadRedfishEndpointByID(r.Context(), id)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to load redfishEndpoints: %w", err))
+		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to load redfishEndpoint %s: %w", id, err))
 		return
-	}
-	var redfishEndpoint *v1.RedfishEndpoint
-	for _, re := range redfishEps {
-		if re.Spec.ID == id {
-			redfishEndpoint = re
-			break
-		}
 	}
 
 	if redfishEndpoint == nil {
@@ -218,17 +204,10 @@ func DeleteRedfishEndpointV2(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	redfishEps, err := storage.LoadAllRedfishEndpoints(r.Context())
+	redfishEndpoint, err := storage.LoadRedfishEndpointByID(r.Context(), id)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to load redfishEndpoints: %w", err))
+		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to load redfishEndpoint %s: %w", id, err))
 		return
-	}
-	var redfishEndpoint *v1.RedfishEndpoint
-	for _, re := range redfishEps {
-		if re.Spec.ID == id {
-			redfishEndpoint = re
-			break
-		}
 	}
 
 	if redfishEndpoint != nil {
