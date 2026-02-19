@@ -7,6 +7,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"time"
 
@@ -67,13 +68,34 @@ func GetRedfishEndpointSmdV2(w http.ResponseWriter, r *http.Request) {
 	respondJSON(w, http.StatusOK, &redfishEndpoint.Spec)
 }
 
-// CreateRedfishEndpointSmdV2 creates a new RedfishEndpoint resource
+// CreateRedfishEndpointSmdV2 creates a new RedfishEndpoint resource.
+// Accepts two input formats:
+//  1. Standard format: a single v1.RedfishEndpointSpec JSON object.
+//  2. V2 inventory format (from OpenCHAMI/smd parseRedfishEndpointDataV2): a JSON object
+//     with the same endpoint-level fields (ID, FQDN, …) plus optional "Systems" and
+//     "Managers" inventory arrays. The presence of either array indicates V2 format.
 func CreateRedfishEndpointSmdV2(w http.ResponseWriter, r *http.Request) {
-	var req v1.RedfishEndpointSpec
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		respondError(w, http.StatusBadRequest, fmt.Errorf("failed to read request body: %w", err))
+		return
+	}
+
+	// Always unmarshal as V2Request — if Systems/Managers are absent it behaves identically
+	// to the plain RedfishEndpointSpec because RedfishEndpointSpec is embedded.
+	var v2req RedfishEndpointV2Request
+	if err := json.Unmarshal(body, &v2req); err != nil {
 		respondError(w, http.StatusBadRequest, fmt.Errorf("invalid request body: %w", err))
 		return
 	}
+
+	isV2Format := len(v2req.Systems) > 0 || len(v2req.Managers) > 0
+	if isV2Format {
+		fmt.Printf("Info: CreateRedfishEndpointSmdV2: received V2 inventory format for endpoint %s (systems=%d, managers=%d)\n",
+			v2req.ID, len(v2req.Systems), len(v2req.Managers))
+	}
+
+	req := v2req.RedfishEndpointSpec
 
 	/* todo
 	// Layer 1: Request validation (validates inline spec fields and metadata)
