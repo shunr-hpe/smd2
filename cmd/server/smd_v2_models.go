@@ -19,6 +19,10 @@ type EthernetInterfaceArray struct {
 	EthernetInterfaces []*v1.EthernetInterfaceSpec `json:"EthernetInterfaces"`
 }
 
+type ServiceEndpointArray struct {
+	ServiceEndpoints []*v1.ServiceEndpointSpec `json:"ServiceEndpoints"`
+}
+
 type RedfishEndpointArray struct {
 	RedfishEndpoints []*v1.RedfishEndpointSpec `json:"RedfishEndpoints"`
 }

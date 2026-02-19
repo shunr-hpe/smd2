@@ -78,6 +78,7 @@ def discover_hardware():
     replicate_component_endpoints()
     replicate_ethernet_interfaces()
     replicate_redfish_endpoints()
+    replicate_service_endpoints()
 
     yield
 
@@ -120,6 +121,7 @@ def replicate_ethernet_interfaces():
         if not response.ok:
             print_response("POST", response)
 
+
 def replicate_redfish_endpoints():
     response = requests.get(f"{smd_base_url}/v2/Inventory/RedfishEndpoints")
     if not response.ok:
@@ -131,6 +133,19 @@ def replicate_redfish_endpoints():
         response = requests.post(f"{smd2_base_url}/v2/Inventory/RedfishEndpoints", json=redfish_endpoint)
         if not response.ok:
             print_response("POST", response)
+
+
+def replicate_service_endpoints():
+    response = requests.get(f"{smd_base_url}/v2/Inventory/ServiceEndpoints")
+    if not response.ok:
+        print_response("GET", response)
+    smd_service_endpoints = json.loads(response.text)
+
+    print("POST ServiceEndpoints to SMD2")
+    response = requests.post(f"{smd2_base_url}/v2/Inventory/ServiceEndpoints", json=smd_service_endpoints)
+    if not response.ok:
+        print_response("POST", response)
+
 
 def test_compare_components(discover_hardware):
     # /State/Components
@@ -209,6 +224,25 @@ def test_compare_components(discover_hardware):
     diff = compare(smd_component_endpoints.get("RedfishEndpoints"), smd2_redfish_endpoints.get("RedfishEndpoints"))
     if diff:
         pytest.fail(f"The RedfishEndpoint list from SMD does not match the list from SMD2. diff: {diff}")
+
+    # /Inventory/ServiceEndpoints
+    response = requests.get(f"{smd_base_url}/v2/Inventory/ServiceEndpoints")
+    if response.status_code != 200:
+        print_response("GET", response)
+        pytest.fail(f" get {response.url}, code: {response.status_code}")
+
+    smd_component_endpoints = json.loads(response.text)
+
+    response = requests.get(f"{smd2_base_url}/v2/Inventory/ServiceEndpoints")
+    if not response.ok:
+        print_response("GET", response)
+        pytest.fail(f"get {response.url}, code: {response.status_code}")
+
+    smd2_redfish_endpoints = json.loads(response.text)
+
+    diff = compare(smd_component_endpoints.get("ServiceEndpoints"), smd2_redfish_endpoints.get("ServiceEndpoints"))
+    if diff:
+        pytest.fail(f"The ServiceEndpoint list from SMD does not match the list from SMD2. diff: {diff}")
 
 
 def get_discovered_nodes(redfishEndpoints):
