@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -98,6 +99,17 @@ func CreateRedfishEndpointSmdV2(w http.ResponseWriter, r *http.Request) {
 	}
 
 	req := v2req.RedfishEndpointSpec
+
+	// Apply defaults for fields that are not set in the request.
+	if req.FQDN == "" {
+		req.FQDN = req.ID
+	}
+	if !req.Enabled {
+		req.Enabled = true
+	}
+	if req.DiscoveryInfo.LastStatus == "" {
+		req.DiscoveryInfo.LastStatus = "NotYetQueried"
+	}
 
 	/* todo
 	// Layer 1: Request validation (validates inline spec fields and metadata)
@@ -293,13 +305,31 @@ func createV2SubResources(
 ) error {
 	now := time.Now()
 
+	// fqdn is the endpoint FQDN, falling back to endpoint ID when FQDN is empty.
+	fqdn := endpoint.FQDN
+	if fqdn == "" {
+		fqdn = endpoint.ID
+	}
+
+	// extractPath strips scheme and host from a URI, returning just the path.
+	// If the URI is already a path (no host), it is returned unchanged.
+	extractPath := func(uri string) string {
+		if u, err := url.Parse(uri); err == nil && u.Host != "" {
+			return u.Path
+		}
+		return uri
+	}
+
 	// Build []*v1.EthernetNICInfo from V2 ethernet interface entries.
+	// InterfaceEnabled defaults to true; the raw eth.Enabled field is omitempty
+	// and therefore false when absent from the input payload.
 	nicInfoFromEths := func(eths []RedfishEndpointV2EthernetInterface) []*v1.EthernetNICInfo {
 		out := make([]*v1.EthernetNICInfo, 0, len(eths))
 		for _, eth := range eths {
 			eth := eth // capture
+			enabled := true
 			out = append(out, &v1.EthernetNICInfo{
-				InterfaceEnabled: &eth.Enabled,
+				InterfaceEnabled: &enabled,
 				RedfishId:        eth.URI,
 				Oid:              eth.URI,
 				Description:      eth.Description,
@@ -320,15 +350,21 @@ func createV2SubResources(
 			if err != nil {
 				return fmt.Errorf("failed to generate UID for EthernetInterface %s: %w", macID, err)
 			}
+			var ipAddresses []v1.IPAddress
+			if eth.IP != "" {
+				ipAddresses = []v1.IPAddress{{IPAddress: eth.IP}}
+			}
 			ei := &v1.EthernetInterface{
 				APIVersion: versionCtx.ServeVersion,
 				Kind:       "EthernetInterface",
 				Spec: v1.EthernetInterfaceSpec{
-					ID:      macID,
-					MACAddr: eth.MAC,
-					IPAddr:  eth.IP,
-					CompID:  compID,
-					Type:    compType,
+					ID:          macID,
+					Description: eth.Description,
+					MACAddr:     eth.MAC,
+					IPAddresses: ipAddresses,
+					LastUpdate:  now.UTC().Format(time.RFC3339Nano),
+					CompID:      compID,
+					Type:        compType,
 				},
 			}
 			ei.Metadata.UID = uid
@@ -373,42 +409,6 @@ func createV2SubResources(
 			return fmt.Errorf("failed to save NodeBMC Component %s: %w", compID, err)
 		}
 
-		// ComponentEndpoint (Manager / BMC)
-		cepUID, err := resource.GenerateUIDForResource("ComponentEndpoint")
-		if err != nil {
-			return fmt.Errorf("failed to generate UID for Manager ComponentEndpoint %s: %w", compID, err)
-		}
-		cep := &v1.ComponentEndpoint{
-			APIVersion: versionCtx.ServeVersion,
-			Kind:       "ComponentEndpoint",
-			Spec: v1.ComponentEndpointSpec{
-				ID:                    compID,
-				Type:                  "NodeBMC",
-				RedfishType:           "Manager",
-				RedfishSubtype:        manager.Type,
-				UUID:                  manager.UUID,
-				OdataID:               manager.URI,
-				RfEndpointID:          endpoint.ID,
-				RedfishEndpointFQDN:   endpoint.FQDN,
-				URL:                   manager.URI,
-				ComponentEndpointType: "ComponentEndpointBMC",
-				Enabled:               true,
-				RedfishManagerInfo: &v1.ComponentManagerInfo{
-					Name:       manager.Name,
-					EthNICInfo: nicInfoFromEths(manager.EthernetInterfaces),
-				},
-			},
-		}
-		cep.Metadata.UID = cepUID
-		cep.Metadata.Name = compID
-		cep.Metadata.CreatedAt = now
-		cep.Metadata.UpdatedAt = now
-		cep.Metadata.Labels = make(map[string]string)
-		cep.Metadata.Annotations = make(map[string]string)
-		if err := storage.SaveComponentEndpoint(ctx, cep); err != nil {
-			return fmt.Errorf("failed to save Manager ComponentEndpoint %s: %w", compID, err)
-		}
-
 		// EthernetInterfaces for this manager
 		if err := saveEthInterfaces(compID, "NodeBMC", manager.EthernetInterfaces); err != nil {
 			return err
@@ -419,27 +419,44 @@ func createV2SubResources(
 	for i, system := range v2req.Systems {
 		nodeID := fmt.Sprintf("%sn%d", endpoint.ID, i)
 
-		// Component (Node)
-		compUID, err := resource.GenerateUIDForResource("Component")
-		if err != nil {
-			return fmt.Errorf("failed to generate UID for Node Component %s: %w", nodeID, err)
-		}
 		enabled := true
-		comp := &v1.Component{
-			APIVersion: versionCtx.ServeVersion,
-			Kind:       "Component",
-			Spec: v1.ComponentSpec{
-				ID:      nodeID,
-				Type:    "Node",
-				Enabled: &enabled,
-			},
+		comp, err := storage.LoadComponentByID(ctx, nodeID)
+		if err == storage.ErrNotFound {
+			// Component (Node)
+			compUID, err := resource.GenerateUIDForResource("Component")
+			if err != nil {
+				return fmt.Errorf("failed to generate UID for Node Component %s: %w", nodeID, err)
+			}
+			comp := &v1.Component{
+				APIVersion: versionCtx.ServeVersion,
+				Kind:       "Component",
+				Spec: v1.ComponentSpec{
+					ID:      nodeID,
+					Type:    "Node",
+					State:   "On",
+					Enabled: &enabled,
+					Role:    "Compute",
+				},
+			}
+			comp.Metadata.UID = compUID
+			comp.Metadata.Name = nodeID
+			comp.Metadata.CreatedAt = now
+			comp.Metadata.UpdatedAt = now
+			comp.Metadata.Labels = make(map[string]string)
+			comp.Metadata.Annotations = make(map[string]string)
+
+		} else if err != nil {
+			// unexpected storage error
+			return fmt.Errorf("Failed to load component %s: %w", nodeID, err)
+		} else {
+			comp.Spec.Type = "Node"
+			comp.Spec.State = "On"
+			comp.Spec.Enabled = &enabled
+			comp.Spec.Role = "Compute"
+
+			comp.Metadata.UpdatedAt = now
 		}
-		comp.Metadata.UID = compUID
-		comp.Metadata.Name = nodeID
-		comp.Metadata.CreatedAt = now
-		comp.Metadata.UpdatedAt = now
-		comp.Metadata.Labels = make(map[string]string)
-		comp.Metadata.Annotations = make(map[string]string)
+
 		if err := storage.SaveComponent(ctx, comp); err != nil {
 			return fmt.Errorf("failed to save Node Component %s: %w", nodeID, err)
 		}
@@ -449,6 +466,7 @@ func createV2SubResources(
 		if err != nil {
 			return fmt.Errorf("failed to generate UID for System ComponentEndpoint %s: %w", nodeID, err)
 		}
+		systemPath := extractPath(system.URI)
 		cep := &v1.ComponentEndpoint{
 			APIVersion: versionCtx.ServeVersion,
 			Kind:       "ComponentEndpoint",
@@ -458,14 +476,25 @@ func createV2SubResources(
 				RedfishType:           "ComputerSystem",
 				RedfishSubtype:        system.SystemType,
 				UUID:                  system.UUID,
-				OdataID:               system.URI,
+				OdataID:               systemPath,
 				RfEndpointID:          endpoint.ID,
-				RedfishEndpointFQDN:   endpoint.FQDN,
-				URL:                   system.URI,
+				RedfishEndpointFQDN:   fqdn,
+				URL:                   fqdn + systemPath,
 				ComponentEndpointType: "ComponentEndpointComputerSystem",
 				Enabled:               true,
 				RedfishSystemInfo: &v1.ComponentSystemInfo{
-					Name:       system.Name,
+					Name: system.Name,
+					Actions: &v1.ComputerSystemActions{
+						ComputerSystemReset: v1.ActionReset{
+							AllowableValues: []string{
+								"On", "ForceOff", "GracefulShutdown", "GracefulRestart",
+								"ForceRestart", "Nmi", "ForceOn", "PushPowerButton",
+								"PowerCycle", "Suspend", "Pause", "Resume",
+							},
+							RFActionInfo: systemPath + "/ResetActionInfo",
+							Target:       systemPath + "/Actions/ComputerSystem.Reset",
+						},
+					},
 					EthNICInfo: nicInfoFromEths(system.EthernetInterfaces),
 				},
 			},

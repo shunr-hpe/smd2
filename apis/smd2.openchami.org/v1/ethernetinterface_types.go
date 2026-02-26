@@ -14,14 +14,20 @@ type EthernetInterface struct {
 	Status     EthernetInterfaceStatus `json:"status,omitempty"`
 }
 
+// IPAddress holds a single IP address entry in the IPAddresses array.
+type IPAddress struct {
+	IPAddress string `json:"IPAddress"`
+	Network   string `json:"Network,omitempty"`
+}
+
 type EthernetInterfaceSpec struct {
-	Description string `json:"description,omitempty" validate:"max=200"`
-	ID          string `json:"ID"`
-	MACAddr     string `json:"MACAddress"`
-	IPAddr      string `json:"IPAddress"`
-	LastUpdate  string `json:"LastUpdate"`
-	CompID      string `json:"ComponentID"`
-	Type        string `json:"Type"`
+	ID          string      `json:"ID"`
+	Description string      `json:"Description,omitempty" validate:"max=200"`
+	MACAddr     string      `json:"MACAddress"`
+	LastUpdate  string      `json:"LastUpdate"`
+	CompID      string      `json:"ComponentID"`
+	Type        string      `json:"Type"`
+	IPAddresses []IPAddress `json:"IPAddresses"`
 }
 
 type EthernetInterfaceStatus struct {
