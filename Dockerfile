@@ -6,6 +6,8 @@
 # FROM docker.io/library/alpine:3.23
 FROM rockylinux:9.3.20231119
 
+ENV SMD_PORT=8080
+
 # add user on alpine linux
 # RUN addgroup -g 1000 smd && \
 #     adduser -D -u 1000 -G smd smd && \
@@ -16,11 +18,10 @@ RUN useradd -m smd
 
 WORKDIR /home/smd
 
-
 COPY bin/smd2-server /usr/local/bin/smd2-server
 
 USER smd
 
 RUN mkdir -p data
 
-ENTRYPOINT ["/usr/local/bin/smd2-server", "serve", "--database-url", "file:data/smd2.db?_fk=1"]
+ENTRYPOINT ["sh", "-c", "/usr/local/bin/smd2-server serve --port $SMD_PORT --database-url file:data/smd2.db?_fk=1"]
