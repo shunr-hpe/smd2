@@ -16,9 +16,6 @@ services:
       - SMD_DBPASS=${SMD2_POSTGRES_PASSWORD} # Set in .env file
       - SMD_DBOPTS=sslmode=disable
       - SMD_JWKS_URL=
-    depends_on:
-      postgres:
-        condition: service_healthy
     networks:
       - internal
 
