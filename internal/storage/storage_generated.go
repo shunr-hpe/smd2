@@ -136,9 +136,8 @@ func SaveComponent(ctx context.Context, resource *v1.Component) error {
 			SetStatus(status).
 			SetUpdatedAt(time.Now())
 
-		// ai did this. Decide if it should be kept
-		if resource.AlternateID != "" {
-			updateOp = updateOp.SetAlternateID(resource.AlternateID)
+		if resource.ID != "" {
+			updateOp = updateOp.SetAlternateID(resource.ID)
 		} else {
 			updateOp = updateOp.ClearAlternateID()
 		}
@@ -288,8 +287,8 @@ func SaveComponentEndpoint(ctx context.Context, resource *v1.ComponentEndpoint) 
 			SetStatus(status).
 			SetUpdatedAt(time.Now())
 
-		if resource.AlternateID != "" {
-			updateOp = updateOp.SetAlternateID(resource.AlternateID)
+		if resource.ID != "" {
+			updateOp = updateOp.SetAlternateID(resource.ID)
 		} else {
 			updateOp = updateOp.ClearAlternateID()
 		}
@@ -439,8 +438,8 @@ func SaveEthernetInterface(ctx context.Context, resource *v1.EthernetInterface) 
 			SetStatus(status).
 			SetUpdatedAt(time.Now())
 
-		if resource.AlternateID != "" {
-			updateOp = updateOp.SetAlternateID(resource.AlternateID)
+		if resource.ID != "" {
+			updateOp = updateOp.SetAlternateID(resource.ID)
 		} else {
 			updateOp = updateOp.ClearAlternateID()
 		}
@@ -590,8 +589,8 @@ func SaveGroup(ctx context.Context, resource *v1.Group) error {
 			SetStatus(status).
 			SetUpdatedAt(time.Now())
 
-		if resource.AlternateID != "" {
-			updateOp = updateOp.SetAlternateID(resource.AlternateID)
+		if resource.ID != "" {
+			updateOp = updateOp.SetAlternateID(resource.ID)
 		} else {
 			updateOp = updateOp.ClearAlternateID()
 		}
@@ -741,8 +740,8 @@ func SaveRedfishEndpoint(ctx context.Context, resource *v1.RedfishEndpoint) erro
 			SetStatus(status).
 			SetUpdatedAt(time.Now())
 
-		if resource.AlternateID != "" {
-			updateOp = updateOp.SetAlternateID(resource.AlternateID)
+		if resource.ID != "" {
+			updateOp = updateOp.SetAlternateID(resource.ID)
 		} else {
 			updateOp = updateOp.ClearAlternateID()
 		}
@@ -892,8 +891,8 @@ func SaveServiceEndpoint(ctx context.Context, resource *v1.ServiceEndpoint) erro
 			SetStatus(status).
 			SetUpdatedAt(time.Now())
 
-		if resource.AlternateID != "" {
-			updateOp = updateOp.SetAlternateID(resource.AlternateID)
+		if resource.ID != "" {
+			updateOp = updateOp.SetAlternateID(resource.ID)
 		} else {
 			updateOp = updateOp.ClearAlternateID()
 		}

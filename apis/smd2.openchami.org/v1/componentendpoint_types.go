@@ -10,9 +10,9 @@ import (
 type ComponentEndpoint struct {
 	APIVersion  string                  `json:"apiVersion"`
 	Kind        string                  `json:"kind"`
-	Metadata    fabrica.Metadata        `json:"metadata"`
-	AlternateID string                  `json:"alternateID,omitempty"`
-	Spec        ComponentEndpointSpec   `json:"spec" validate:"required"`
+	Metadata fabrica.Metadata        `json:"metadata"`
+	ID       string                  `json:"id,omitempty"`
+	Spec     ComponentEndpointSpec   `json:"spec" validate:"required"`
 	Status      ComponentEndpointStatus `json:"status,omitempty"`
 }
 

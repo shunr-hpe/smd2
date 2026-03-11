@@ -7,12 +7,12 @@ import (
 )
 
 type EthernetInterface struct {
-	APIVersion  string                  `json:"apiVersion"`
-	Kind        string                  `json:"kind"`
-	Metadata    fabrica.Metadata        `json:"metadata"`
-	AlternateID string                  `json:"alternateID,omitempty"`
-	Spec        EthernetInterfaceSpec   `json:"spec" validate:"required"`
-	Status      EthernetInterfaceStatus `json:"status,omitempty"`
+	APIVersion string                  `json:"apiVersion"`
+	Kind       string                  `json:"kind"`
+	Metadata   fabrica.Metadata        `json:"metadata"`
+	ID         string                  `json:"id,omitempty"`
+	Spec       EthernetInterfaceSpec   `json:"spec" validate:"required"`
+	Status     EthernetInterfaceStatus `json:"status,omitempty"`
 }
 
 // IPAddress holds a single IP address entry in the IPAddresses array.

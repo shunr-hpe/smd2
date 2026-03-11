@@ -37,7 +37,7 @@ func ToEntResource(fabricaResource interface{}) (*ent.ResourceCreate, map[string
 		kind = v.Kind
 		name = v.Metadata.Name
 		uid = v.Metadata.UID
-		alternateID = v.AlternateID
+		alternateID = v.ID
 		labels = v.Metadata.Labels
 		annotations = v.Metadata.Annotations
 		createdAt = v.Metadata.CreatedAt
@@ -59,7 +59,7 @@ func ToEntResource(fabricaResource interface{}) (*ent.ResourceCreate, map[string
 		kind = v.Kind
 		name = v.Metadata.Name
 		uid = v.Metadata.UID
-		alternateID = v.AlternateID
+		alternateID = v.ID
 		labels = v.Metadata.Labels
 		annotations = v.Metadata.Annotations
 		createdAt = v.Metadata.CreatedAt
@@ -81,7 +81,7 @@ func ToEntResource(fabricaResource interface{}) (*ent.ResourceCreate, map[string
 		kind = v.Kind
 		name = v.Metadata.Name
 		uid = v.Metadata.UID
-		alternateID = v.AlternateID
+		alternateID = v.ID
 		labels = v.Metadata.Labels
 		annotations = v.Metadata.Annotations
 		createdAt = v.Metadata.CreatedAt
@@ -103,7 +103,7 @@ func ToEntResource(fabricaResource interface{}) (*ent.ResourceCreate, map[string
 		kind = v.Kind
 		name = v.Metadata.Name
 		uid = v.Metadata.UID
-		alternateID = v.AlternateID
+		alternateID = v.ID
 		labels = v.Metadata.Labels
 		annotations = v.Metadata.Annotations
 		createdAt = v.Metadata.CreatedAt
@@ -125,7 +125,7 @@ func ToEntResource(fabricaResource interface{}) (*ent.ResourceCreate, map[string
 		kind = v.Kind
 		name = v.Metadata.Name
 		uid = v.Metadata.UID
-		alternateID = v.AlternateID
+		alternateID = v.ID
 		labels = v.Metadata.Labels
 		annotations = v.Metadata.Annotations
 		createdAt = v.Metadata.CreatedAt
@@ -147,7 +147,7 @@ func ToEntResource(fabricaResource interface{}) (*ent.ResourceCreate, map[string
 		kind = v.Kind
 		name = v.Metadata.Name
 		uid = v.Metadata.UID
-		alternateID = v.AlternateID
+		alternateID = v.ID
 		labels = v.Metadata.Labels
 		annotations = v.Metadata.Annotations
 		createdAt = v.Metadata.CreatedAt

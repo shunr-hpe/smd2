@@ -24,7 +24,7 @@ func (s *EntStorage) LoadComponent(ctx context.Context, uid string) (*v1.Compone
 }
 
 func (s *EntStorage) SaveComponent(ctx context.Context, resource *v1.Component) error {
-	resource.AlternateID = resource.Spec.ID
+	resource.ID = resource.Spec.ID
 	return storage.SaveComponent(ctx, resource)
 }
 
@@ -41,7 +41,7 @@ func (s *EntStorage) LoadComponentEndpoint(ctx context.Context, uid string) (*v1
 }
 
 func (s *EntStorage) SaveComponentEndpoint(ctx context.Context, resource *v1.ComponentEndpoint) error {
-	resource.AlternateID = resource.Spec.ID
+	resource.ID = resource.Spec.ID
 	return storage.SaveComponentEndpoint(ctx, resource)
 }
 
@@ -58,7 +58,7 @@ func (s *EntStorage) LoadEthernetInterface(ctx context.Context, uid string) (*v1
 }
 
 func (s *EntStorage) SaveEthernetInterface(ctx context.Context, resource *v1.EthernetInterface) error {
-	resource.AlternateID = resource.Spec.ID
+	resource.ID = resource.Spec.ID
 	return storage.SaveEthernetInterface(ctx, resource)
 }
 
@@ -75,7 +75,7 @@ func (s *EntStorage) LoadGroup(ctx context.Context, uid string) (*v1.Group, erro
 }
 
 func (s *EntStorage) SaveGroup(ctx context.Context, resource *v1.Group) error {
-	resource.AlternateID = resource.Spec.Label
+	resource.ID = resource.Spec.Label
 	return storage.SaveGroup(ctx, resource)
 }
 
@@ -92,7 +92,7 @@ func (s *EntStorage) LoadRedfishEndpoint(ctx context.Context, uid string) (*v1.R
 }
 
 func (s *EntStorage) SaveRedfishEndpoint(ctx context.Context, resource *v1.RedfishEndpoint) error {
-	resource.AlternateID = resource.Spec.ID
+	resource.ID = resource.Spec.ID
 	return storage.SaveRedfishEndpoint(ctx, resource)
 }
 
@@ -109,7 +109,7 @@ func (s *EntStorage) LoadServiceEndpoint(ctx context.Context, uid string) (*v1.S
 }
 
 func (s *EntStorage) SaveServiceEndpoint(ctx context.Context, resource *v1.ServiceEndpoint) error {
-	resource.AlternateID = resource.Spec.URL
+	resource.ID = resource.Spec.URL
 	return storage.SaveServiceEndpoint(ctx, resource)
 }
 

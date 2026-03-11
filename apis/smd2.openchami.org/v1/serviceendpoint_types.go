@@ -8,12 +8,12 @@ import (
 )
 
 type ServiceEndpoint struct {
-	APIVersion  string                `json:"apiVersion"`
-	Kind        string                `json:"kind"`
-	Metadata    fabrica.Metadata      `json:"metadata"`
-	AlternateID string                `json:"alternateID,omitempty"`
-	Spec        ServiceEndpointSpec   `json:"spec" validate:"required"`
-	Status      ServiceEndpointStatus `json:"status,omitempty"`
+	APIVersion string                `json:"apiVersion"`
+	Kind       string                `json:"kind"`
+	Metadata   fabrica.Metadata      `json:"metadata"`
+	ID         string                `json:"id,omitempty"`
+	Spec       ServiceEndpointSpec   `json:"spec" validate:"required"`
+	Status     ServiceEndpointStatus `json:"status,omitempty"`
 }
 
 type ServiceEndpointSpec struct {
