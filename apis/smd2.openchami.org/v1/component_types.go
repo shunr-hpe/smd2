@@ -45,9 +45,7 @@ type ComponentStatus struct {
 }
 
 func (r *Component) Validate(ctx context.Context) error {
-	if ComponentPlugin != nil {
-		return ComponentPlugin.Validate(ctx, r)
-	}
+
 	return nil
 }
 
@@ -64,15 +62,3 @@ func (r *Component) GetUID() string {
 }
 
 func (r *Component) IsHub() {}
-
-var ComponentPlugin ComponentIfc = &NoOptComponentPlugin{}
-
-type ComponentIfc interface {
-	Validate(ctx context.Context, r *Component) error
-}
-
-type NoOptComponentPlugin struct{}
-
-func (p *NoOptComponentPlugin) Validate(ctx context.Context, r *Component) error {
-	return nil
-}
