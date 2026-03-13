@@ -254,3 +254,17 @@ func TestRedfishEndpointLifecycle(t *testing.T) {
 		t.Errorf("expected HTTP 404 after DELETE, got %d", gone.StatusCode)
 	}
 }
+
+// TestCreateRedfishEndpointDuplicateID verifies that POST /redfishendpoints rejects
+// a second resource with the same Spec.ID, enforcing resource_id uniqueness.
+func TestCreateRedfishEndpointDuplicateID(t *testing.T) {
+	id := "x3001c0s0b0"
+	first := createRedfishEndpointAndRequire(t, newRedfishEndpoint(id, "bmc-dup.example.com"))
+	defer func() { doRequest(t, http.MethodDelete, "/redfishendpoints/"+first.Metadata.UID, nil).Body.Close() }()
+
+	resp := doRequest(t, http.MethodPost, "/redfishendpoints", newRedfishEndpoint(id, "bmc-dup.example.com"))
+	defer resp.Body.Close()
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		t.Errorf("expected non-2xx on duplicate redfish endpoint ID %q, got HTTP %d", id, resp.StatusCode)
+	}
+}

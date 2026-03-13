@@ -284,3 +284,26 @@ func TestCsmServiceEndpointLifecycle(t *testing.T) {
 		t.Errorf("expected non-200 after DELETE, still got 200")
 	}
 }
+
+// TestCreateServiceEndpointCsmDuplicateID verifies that POST .../ServiceEndpoints
+// rejects a service endpoint whose RedfishURL already exists, enforcing resource_id
+// uniqueness. resource_id for ServiceEndpoints is Spec.RedfishURL, so a non-empty
+// RedfishURL is required for the uniqueness constraint to apply.
+func TestCreateServiceEndpointCsmDuplicateID(t *testing.T) {
+	const redfishURL = "x3001c0r0b0-mgr"
+	spec := &csmServiceEndpointSpec{
+		RedfishEndpointID: "x3001c0r0b0",
+		RedfishType:       "Manager",
+		RedfishURL:        redfishURL,
+	}
+	csmSECreate(t, spec)
+	defer csmSEDelete(t, redfishURL) // resource_id equals RedfishURL
+
+	resp := doRequest(t, http.MethodPost, csmSEBase, csmServiceEndpointArray{
+		ServiceEndpoints: []*csmServiceEndpointSpec{spec},
+	})
+	defer resp.Body.Close()
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		t.Errorf("expected non-2xx on duplicate service endpoint URL %q, got HTTP %d", redfishURL, resp.StatusCode)
+	}
+}

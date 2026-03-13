@@ -253,3 +253,18 @@ func TestComponentEndpointLifecycle(t *testing.T) {
 		t.Errorf("expected HTTP 404 after DELETE, got %d", gone.StatusCode)
 	}
 }
+
+// TestCreateComponentEndpointDuplicateID verifies that POST /componentendpoints rejects
+// a second resource with the same Spec.ID, enforcing resource_id uniqueness.
+func TestCreateComponentEndpointDuplicateID(t *testing.T) {
+	id := "x4001c0s0b0n0"
+	rfID := "x4001c0s0b0"
+	first := createComponentEndpointAndRequire(t, newComponentEndpoint(id, rfID))
+	defer func() { doRequest(t, http.MethodDelete, "/componentendpoints/"+first.Metadata.UID, nil).Body.Close() }()
+
+	resp := doRequest(t, http.MethodPost, "/componentendpoints", newComponentEndpoint(id, rfID))
+	defer resp.Body.Close()
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		t.Errorf("expected non-2xx on duplicate component endpoint ID %q, got HTTP %d", id, resp.StatusCode)
+	}
+}

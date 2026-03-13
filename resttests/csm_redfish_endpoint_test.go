@@ -278,3 +278,17 @@ func TestCsmRedfishEndpointLifecycle(t *testing.T) {
 		t.Errorf("expected non-200 after DELETE, still got 200")
 	}
 }
+
+// TestCreateRedfishEndpointCsmDuplicateID verifies that POST .../RedfishEndpoints
+// rejects a redfish endpoint whose ID already exists, enforcing resource_id uniqueness.
+func TestCreateRedfishEndpointCsmDuplicateID(t *testing.T) {
+	id := "x3000c0s13b0"
+	csmRECreate(t, newCsmRedfishEndpoint(id, "bmc-dup.example.com"))
+	defer csmREDelete(t, id)
+
+	resp := doRequest(t, http.MethodPost, csmREBase, newCsmRedfishEndpoint(id, "bmc-dup.example.com"))
+	defer resp.Body.Close()
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		t.Errorf("expected non-2xx on duplicate redfish endpoint ID %q, got HTTP %d", id, resp.StatusCode)
+	}
+}

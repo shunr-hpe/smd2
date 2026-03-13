@@ -256,3 +256,17 @@ func TestCsmEthernetInterfaceLifecycle(t *testing.T) {
 		t.Errorf("expected non-200 after DELETE, still got 200")
 	}
 }
+
+// TestCreateEthernetInterfaceCsmDuplicateID verifies that POST .../EthernetInterfaces
+// rejects an ethernet interface whose ID already exists, enforcing resource_id uniqueness.
+func TestCreateEthernetInterfaceCsmDuplicateID(t *testing.T) {
+	id := "c0:00:00:00:00:02"
+	csmEICreate(t, newCsmEthernetInterface(id, id, "x3000c0s0b0n0"))
+	defer csmEIDelete(t, id)
+
+	resp := doRequest(t, http.MethodPost, csmEIBase, newCsmEthernetInterface(id, id, "x3000c0s0b0n0"))
+	defer resp.Body.Close()
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		t.Errorf("expected non-2xx on duplicate ethernet interface ID %q, got HTTP %d", id, resp.StatusCode)
+	}
+}

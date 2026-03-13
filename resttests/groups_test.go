@@ -253,3 +253,17 @@ func TestGroupLifecycle(t *testing.T) {
 		t.Errorf("expected HTTP 404 after DELETE, got %d", gone.StatusCode)
 	}
 }
+
+// TestCreateGroupDuplicateID verifies that POST /groups rejects a second resource
+// with the same Spec.Label, enforcing resource_id uniqueness.
+func TestCreateGroupDuplicateID(t *testing.T) {
+	label := "duplicate-test-group"
+	first := createGroupAndRequire(t, newGroup(label))
+	defer func() { doRequest(t, http.MethodDelete, "/groups/"+first.Metadata.UID, nil).Body.Close() }()
+
+	resp := doRequest(t, http.MethodPost, "/groups", newGroup(label))
+	defer resp.Body.Close()
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		t.Errorf("expected non-2xx on duplicate group label %q, got HTTP %d", label, resp.StatusCode)
+	}
+}

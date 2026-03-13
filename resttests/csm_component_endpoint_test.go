@@ -282,3 +282,19 @@ func TestCsmComponentEndpointLifecycle(t *testing.T) {
 		t.Errorf("expected non-200 after DELETE %s, still got 200", id)
 	}
 }
+
+// TestCreateComponentEndpointCsmDuplicateID verifies that POST .../ComponentEndpoints
+// rejects a component endpoint whose ID already exists, enforcing resource_id uniqueness.
+func TestCreateComponentEndpointCsmDuplicateID(t *testing.T) {
+	id := "x5001c0s0b0n0"
+	csmCECreate(t, newCsmComponentEndpoint(id, "x5001c0s0b0"))
+	defer csmCEDelete(t, id)
+
+	resp := doRequest(t, http.MethodPost, csmCEBase, csmComponentEndpointArray{
+		ComponentEndpoints: []*csmComponentEndpointSpec{newCsmComponentEndpoint(id, "x5001c0s0b0")},
+	})
+	defer resp.Body.Close()
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		t.Errorf("expected non-2xx on duplicate component endpoint ID %q, got HTTP %d", id, resp.StatusCode)
+	}
+}

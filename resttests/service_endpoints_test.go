@@ -224,3 +224,28 @@ func TestServiceEndpointLifecycle(t *testing.T) {
 		t.Errorf("expected HTTP 404 after DELETE, got %d", gone.StatusCode)
 	}
 }
+
+// TestCreateServiceEndpointDuplicateID verifies that POST /serviceendpoints rejects
+// a second resource with the same RedfishURL (resource_id), enforcing uniqueness.
+// Note: resource_id for ServiceEndpoints is Spec.RedfishURL (the URL field), so a
+// non-empty RedfishURL must be provided for the uniqueness constraint to apply.
+func TestCreateServiceEndpointDuplicateID(t *testing.T) {
+	const redfishURL = "x3001c0b0-chassis"
+	req := createServiceEndpointRequest{
+		Metadata: componentMetadata{Name: "x3001c0b0"},
+		Spec: serviceEndpointSpec{
+			RedfishEndpointID: "x3001c0b0",
+			RedfishType:       "Chassis",
+			OdataID:           "/redfish/v1/Chassis/x3001c0b0",
+			RedfishURL:        redfishURL,
+		},
+	}
+	first := createServiceEndpointAndRequire(t, req)
+	defer func() { doRequest(t, http.MethodDelete, "/serviceendpoints/"+first.Metadata.UID, nil).Body.Close() }()
+
+	resp := doRequest(t, http.MethodPost, "/serviceendpoints", req)
+	defer resp.Body.Close()
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		t.Errorf("expected non-2xx on duplicate service endpoint URL %q, got HTTP %d", redfishURL, resp.StatusCode)
+	}
+}

@@ -236,3 +236,17 @@ func TestEthernetInterfaceLifecycle(t *testing.T) {
 		t.Errorf("expected HTTP 404 after DELETE, got %d", gone.StatusCode)
 	}
 }
+
+// TestCreateEthernetInterfaceDuplicateID verifies that POST /ethernetinterfaces rejects
+// a second resource with the same Spec.ID, enforcing resource_id uniqueness.
+func TestCreateEthernetInterfaceDuplicateID(t *testing.T) {
+	mac := "c0:00:00:00:00:01"
+	first := createEthernetInterfaceAndRequire(t, newEthernetInterface(mac, mac))
+	defer func() { doRequest(t, http.MethodDelete, "/ethernetinterfaces/"+first.Metadata.UID, nil).Body.Close() }()
+
+	resp := doRequest(t, http.MethodPost, "/ethernetinterfaces", newEthernetInterface(mac, mac))
+	defer resp.Body.Close()
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		t.Errorf("expected non-2xx on duplicate ethernet interface ID %q, got HTTP %d", mac, resp.StatusCode)
+	}
+}

@@ -294,3 +294,19 @@ func TestCsmComponentLifecycle(t *testing.T) {
 		t.Errorf("expected non-200 after DELETE, still got 200")
 	}
 }
+
+// TestCreateComponentCsmDuplicateID verifies that POST /hsm/v2/State/Components rejects
+// a component whose ID already exists, enforcing resource_id uniqueness.
+func TestCreateComponentCsmDuplicateID(t *testing.T) {
+	xname := "x3000c0s3b0n0"
+	csmCreate(t, &csmComponentSpec{ID: xname, Type: "Node"})
+	defer csmDelete(t, xname)
+
+	resp := doRequest(t, http.MethodPost, csmBase, csmComponentArray{
+		Components: []*csmComponentSpec{{ID: xname, Type: "Node"}},
+	})
+	defer resp.Body.Close()
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		t.Errorf("expected non-2xx on duplicate component ID %q, got HTTP %d", xname, resp.StatusCode)
+	}
+}

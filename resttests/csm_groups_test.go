@@ -256,3 +256,17 @@ func TestCsmGroupLifecycle(t *testing.T) {
 		t.Errorf("expected non-200 after DELETE, still got 200")
 	}
 }
+
+// TestCreateGroupCsmDuplicateID verifies that POST /hsm/v2/groups rejects a group
+// whose label already exists, enforcing resource_id uniqueness.
+func TestCreateGroupCsmDuplicateID(t *testing.T) {
+	label := "csm-duplicate-test-group"
+	csmGroupCreate(t, newCsmGroup(label))
+	defer csmGroupDelete(t, label)
+
+	resp := doRequest(t, http.MethodPost, csmGroupBase, newCsmGroup(label))
+	defer resp.Body.Close()
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		t.Errorf("expected non-2xx on duplicate group label %q, got HTTP %d", label, resp.StatusCode)
+	}
+}
