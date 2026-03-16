@@ -43,17 +43,18 @@ func GetServiceEndpointCsm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	serviceEndpoint, err := plugins.Store.LoadServiceEndpointByID(r.Context(), id)
+	serviceEndpoints, err := plugins.Store.LoadServiceEndpointsByRedfishType(r.Context(), id)
 	if err != nil {
 		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to load serviceendpoint %s: %w", id, err))
 		return
 	}
 
-	if serviceEndpoint == nil {
-		respondError(w, http.StatusNotFound, fmt.Errorf("serviceendpoint not found: %s", id))
-		return
+	services := make([]*v1.ServiceEndpointSpec, len(serviceEndpoints))
+	for _, serviceEndpoint := range serviceEndpoints {
+		services = append(services, &serviceEndpoint.Spec)
 	}
-	respondJSON(w, http.StatusOK, &serviceEndpoint.Spec)
+
+	respondJSON(w, http.StatusOK, services)
 }
 
 // CreateServiceEndpointCsm creates one or more new ServiceEndpoint resources

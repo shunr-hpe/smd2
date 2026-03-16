@@ -8,8 +8,11 @@ import (
 	"context"
 	"fmt"
 
+	entsql "entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqljson"
 	v1 "github.com/OpenCHAMI/smd2/apis/smd2.openchami.org/v1"
 	"github.com/OpenCHAMI/smd2/internal/storage/ent"
+	entpredicate "github.com/OpenCHAMI/smd2/internal/storage/ent/predicate"
 	entresource "github.com/OpenCHAMI/smd2/internal/storage/ent/resource"
 )
 
@@ -153,6 +156,42 @@ func LoadServiceEndpointByID(ctx context.Context, id string) (*v1.ServiceEndpoin
 	}
 
 	return fabricaResource.(*v1.ServiceEndpoint), nil
+}
+
+// LoadServiceEndpointsByServiceID loads all ServiceEndpoint resources whose
+// spec.RedfishType matches the given serviceID.
+func LoadServiceEndpointsByRedfishType(ctx context.Context, serviceID string) ([]*v1.ServiceEndpoint, error) {
+	if entClient == nil {
+		return nil, fmt.Errorf("ent client not initialized")
+	}
+
+	jsonPredicate := entpredicate.Resource(func(s *entsql.Selector) {
+		s.Where(sqljson.ValueEQ(s.C(entresource.FieldSpec), serviceID,
+			sqljson.Path("RedfishType")))
+	})
+
+	entResources, err := entClient.Resource.Query().
+		Where(
+			entresource.KindEQ("ServiceEndpoint"),
+			jsonPredicate,
+		).
+		WithLabels().
+		WithAnnotations().
+		All(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load ServiceEndpoint resources: %w", err)
+	}
+
+	var results []*v1.ServiceEndpoint
+	for _, entResource := range entResources {
+		fabricaResource, err := FromEntResource(ctx, entResource)
+		if err != nil {
+			continue
+		}
+		results = append(results, fabricaResource.(*v1.ServiceEndpoint))
+	}
+
+	return results, nil
 }
 
 func LoadGroupByLabel(ctx context.Context, label string) (*v1.Group, error) {

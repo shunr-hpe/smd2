@@ -140,3 +140,7 @@ func (s *EntStorage) LoadServiceEndpointByID(ctx context.Context, id string) (*v
 func (s *EntStorage) LoadGroupByLabel(ctx context.Context, label string) (*v1.Group, error) {
 	return storage.LoadGroupByLabel(ctx, label)
 }
+
+func (s *EntStorage) LoadServiceEndpointsByRedfishType(ctx context.Context, serviceID string) ([]*v1.ServiceEndpoint, error) {
+	return storage.LoadServiceEndpointsByRedfishType(ctx, serviceID)
+}
