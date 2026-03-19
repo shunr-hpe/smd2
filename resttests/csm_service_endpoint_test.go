@@ -169,62 +169,63 @@ func TestGetServiceEndpointCsm(t *testing.T) {
 	}
 }
 
-// todo fix
 // TestUpdateServiceEndpointCsm verifies PUT /hsm/v2/Inventory/ServiceEndpoints/{id}
 // updates the resource and returns the updated spec.
-// func TestUpdateServiceEndpointCsm(t *testing.T) {
-// 	rfID := "x3000c0r1b6"
-// 	csmSECreate(t, &csmServiceEndpointSpec{
-// 		RedfishEndpointID: rfID,
-// 		RedfishType:       "Chassis",
-// 		OdataID:           "/redfish/v1/Chassis/" + rfID,
-// 	})
-// 	defer csmSEDelete(t, rfID)
-//
-// 	updateSpec := csmServiceEndpointSpec{
-// 		RedfishEndpointID:   rfID,
-// 		RedfishType:         "Manager",
-// 		RedfishEndpointFQDN: "bmc.example.com",
-// 		OdataID:             "/redfish/v1/Managers/BMC",
-// 	}
-// 	resp := doRequest(t, http.MethodPut, fmt.Sprintf("%s/%s", csmSEBase, rfID), updateSpec)
-// 	requireStatus(t, resp, http.StatusOK)
-// 	resp.Body.Close()
-//
-// 	// Verify via GET that the update persisted
-// 	spec, status := csmSEGetOne(t, rfID)
-// 	if status != http.StatusOK {
-// 		t.Fatalf("expected HTTP 200 after PUT, got %d", status)
-// 	}
-// 	if spec.RedfishType != "Manager" {
-// 		t.Errorf("expected RedfishType=Manager after PUT, got %q", spec.RedfishType)
-// 	}
-// 	if spec.RedfishEndpointFQDN != "bmc.example.com" {
-// 		t.Errorf("expected RedfishEndpointFQDN=bmc.example.com after PUT, got %q", spec.RedfishEndpointFQDN)
-// 	}
-// }
+func TestUpdateServiceEndpointCsm(t *testing.T) {
+	rfID := "x3000c0r1b6"
+	rfType := "UpdateService"
+	csmSECreate(t, &csmServiceEndpointSpec{
+		RedfishEndpointID: rfID,
+		RedfishType:       rfType,
+		OdataID:           "/redfish/v1/Chassis/" + rfID,
+	})
+	defer csmSEDelete(t, rfType, rfID)
 
-// todo fix
+	updateSpec := csmServiceEndpointSpec{
+		RedfishEndpointID:   rfID,
+		RedfishType:         rfType,
+		RedfishEndpointFQDN: "bmc.example.com",
+		OdataID:             "/redfish/v1/Managers/BMC",
+	}
+	// resp := doRequest(t, http.MethodPut, fmt.Sprintf("%s/%s", csmSEBase, rfID), updateSpec)
+	resp := doRequest(t, http.MethodPut, fmt.Sprintf("%s/%s/RedfishEndpoints/%s", csmSEBase, rfType, rfID), updateSpec)
+	requireStatus(t, resp, http.StatusOK)
+	resp.Body.Close()
+
+	// Verify via GET that the update persisted
+	spec, status := csmSEGetOne(t, rfType, rfID)
+	if status != http.StatusOK {
+		t.Fatalf("expected HTTP 200 after PUT, got %d", status)
+	}
+	if spec.RedfishType != rfType {
+		t.Errorf("expected RedfishType=%s after PUT, got %q", rfType, spec.RedfishType)
+	}
+	if spec.RedfishEndpointFQDN != "bmc.example.com" {
+		t.Errorf("expected RedfishEndpointFQDN=bmc.example.com after PUT, got %q", spec.RedfishEndpointFQDN)
+	}
+}
+
 // TestDeleteServiceEndpointCsm verifies DELETE /hsm/v2/Inventory/ServiceEndpoints/{id}
 // returns 200 and that a subsequent GET does not return 200.
-// func TestDeleteServiceEndpointCsm(t *testing.T) {
-// 	rfID := "x3000c0r1b7"
-// 	csmSECreate(t, &csmServiceEndpointSpec{RedfishEndpointID: rfID, RedfishType: "Chassis"})
-//
-// 	delResp := doRequest(t, http.MethodDelete, fmt.Sprintf("%s/%s", csmSEBase, rfID), nil)
-// 	requireStatus(t, delResp, http.StatusOK)
-// 	var delBody deleteComponentResponse
-// 	decodeJSON(t, delResp, &delBody)
-// 	if delBody.Message == "" {
-// 		t.Error("expected non-empty message in delete response")
-// 	}
-//
-// 	// Confirm gone
-// 	_, status := csmSEGetOne(t, rfID)
-// 	if status == http.StatusOK {
-// 		t.Errorf("expected non-200 after DELETE %s, still got 200", rfID)
-// 	}
-// }
+func TestDeleteServiceEndpointCsm(t *testing.T) {
+	rfID := "x3000c0r1b7"
+	rfType := "UpdateService"
+	csmSECreate(t, &csmServiceEndpointSpec{RedfishEndpointID: rfID, RedfishType: rfType})
+
+	delResp := doRequest(t, http.MethodDelete, fmt.Sprintf("%s/%s/RedfishEndpoints/%s", csmSEBase, rfType, rfID), nil)
+	requireStatus(t, delResp, http.StatusOK)
+	var delBody deleteComponentResponse
+	decodeJSON(t, delResp, &delBody)
+	if delBody.Message == "" {
+		t.Error("expected non-empty message in delete response")
+	}
+
+	// Confirm gone
+	_, status := csmSEGetOne(t, rfType, rfID)
+	if status == http.StatusOK {
+		t.Errorf("expected non-200 after DELETE %s, still got 200", rfID)
+	}
+}
 
 // TestCsmServiceEndpointLifecycle exercises the full POST → GET → PUT → DELETE cycle.
 func TestCsmServiceEndpointLifecycle(t *testing.T) {
