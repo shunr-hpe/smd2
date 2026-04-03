@@ -84,11 +84,12 @@ func (Resource) Fields() []ent.Field {
 			Optional().
 			Comment("Namespace for multi-tenancy"),
 
-		// Optional alternate identifier picked by the client, and it matches the ID in the Spec.
-		// This allows for efficient lookups by alternate ID without needing to parse the JSON Spec.
+		// Optional identifier that is unique within a resource type.
+		// What is used for the identifier is specific to each type of resource.
+		// It allows for efficient lookups by this ID without needing to parse the JSON Spec.
 		field.String("resource_id").
 			Optional().
-			Comment("Alternate identifier that matches ID in the Spec"),
+			Comment("Identifier that along with the resource type is unique."),
 	}
 }
 
