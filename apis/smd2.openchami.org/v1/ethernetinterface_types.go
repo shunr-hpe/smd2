@@ -15,15 +15,11 @@ type EthernetInterface struct {
 	Status     EthernetInterfaceStatus `json:"status,omitempty"`
 }
 
-// IPAddress holds a single IP address entry in the IPAddresses array.
-type IPAddress struct {
-	IPAddress string `json:"IPAddress"`
-	Network   string `json:"Network,omitempty"`
-}
-
 type EthernetInterfaceSpec struct {
-	ID          string      `json:"ID"`
+	// todo resolve what to do about the case differences
+	// SMD uses Description and fabrica uses description
 	Description string      `json:"Description,omitempty" validate:"max=200"`
+	ID          string      `json:"ID"`
 	MACAddr     string      `json:"MACAddress"`
 	LastUpdate  string      `json:"LastUpdate"`
 	CompID      string      `json:"ComponentID"`
@@ -55,3 +51,8 @@ func (r *EthernetInterface) GetUID() string {
 }
 
 func (r *EthernetInterface) IsHub() {}
+
+type IPAddress struct {
+	IPAddress string `json:"IPAddress"`
+	Network   string `json:"Network,omitempty"`
+}

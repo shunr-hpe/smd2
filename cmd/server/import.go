@@ -26,7 +26,7 @@ func newImportCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "import",
 		Short: "Import resources from files",
-		Long: `Import resources from JSON or YAML files into plugins.Store.
+		Long: `Import resources from JSON or YAML files into storage.
 
 This is useful for:
   - Restoring from backups

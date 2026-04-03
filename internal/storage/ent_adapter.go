@@ -20,7 +20,7 @@ import (
 	v1 "github.com/OpenCHAMI/smd2/apis/smd2.openchami.org/v1"
 )
 
-// ToEntResource converts a Fabrica resource to an Ent resource entity for plugins.Store.
+// ToEntResource converts a Fabrica resource to an Ent resource entity for storage.
 // This function extracts the Resource fields and marshals Spec/Status to JSON.
 func ToEntResource(fabricaResource interface{}) (*ent.ResourceCreate, map[string]string, map[string]string, error) {
 	// Type assertion to get Resource fields
