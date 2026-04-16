@@ -11,13 +11,13 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/OpenCHAMI/smd2/internal/storage/ent"
-	"github.com/OpenCHAMI/smd2/internal/storage/ent/annotation"
-	"github.com/OpenCHAMI/smd2/internal/storage/ent/label"
-	entresource "github.com/OpenCHAMI/smd2/internal/storage/ent/resource"
+	"github.com/OpenCHAMI/inventory-service/internal/storage/ent"
+	"github.com/OpenCHAMI/inventory-service/internal/storage/ent/annotation"
+	"github.com/OpenCHAMI/inventory-service/internal/storage/ent/label"
+	entresource "github.com/OpenCHAMI/inventory-service/internal/storage/ent/resource"
 	"github.com/openchami/fabrica/pkg/fabrica"
 
-	v1 "github.com/OpenCHAMI/smd2/apis/smd2.openchami.org/v1"
+	v1 "github.com/OpenCHAMI/inventory-service/apis/inventory-service.openchami.org/v1"
 )
 
 // ToEntResource converts a Fabrica resource to an Ent resource entity for storage.

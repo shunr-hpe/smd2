@@ -52,3 +52,8 @@ func (r *Group) IsHub() {}
 type Members struct {
 	IDs []string `json:"ids"`
 }
+type Membership struct {
+	ID            string   `json:"id"`
+	GroupLabels   []string `json:"groupLabels"`
+	PartitionName string   `json:"partitionName"`
+}

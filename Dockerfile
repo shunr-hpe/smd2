@@ -20,11 +20,11 @@ RUN groupadd -g 1000 smd && \
 
 WORKDIR /home/smd
 
-COPY bin/smd2-server /usr/local/bin/smd2-server
+COPY bin/inventory-service /usr/local/bin/inventory-service
 
 RUN chown -R smd:smd /home/smd
 
 USER smd
 
-ENTRYPOINT ["/usr/local/bin/smd2-server"]
-CMD ["serve", "--port", "8080", "--database-url", "file:/data/smd2.db?_fk=1"]
+ENTRYPOINT ["/usr/local/bin/inventory-service"]
+CMD ["serve", "--port", "8080", "--database-url", "file:/data/inventory.db?_fk=1"]

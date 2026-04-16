@@ -7,7 +7,7 @@ package plugins
 import (
 	"context"
 
-	v1 "github.com/OpenCHAMI/smd2/apis/smd2.openchami.org/v1"
+	v1 "github.com/OpenCHAMI/inventory-service/apis/inventory-service.openchami.org/v1"
 )
 
 // StorageExtras defines the interface for extra storage operations

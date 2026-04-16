@@ -10,14 +10,14 @@ import pprint
 from deepdiff import DeepDiff
 
 smd_base_url = "http://smd:27779/hsm"
-smd2_base_url = "http://smd2:8080/hsm"
+inventory_base_url = "http://inventory:8080/hsm"
 
 @pytest.fixture()
 def discover_hardware():
     # setup
 
     smd_base_url = "http://smd:27779/hsm"
-    smd2_base_url = "http://smd2:8080/hsm"
+    inventory_base_url = "http://inventory:8080/hsm"
 
     headers = {
     }
@@ -92,7 +92,7 @@ def replicate_components():
     smd_components = json.loads(response.text)
 
     print("POST Components to SMD2")
-    response = requests.post(f"{smd2_base_url}/v2/State/Components", json=smd_components)
+    response = requests.post(f"{inventory_base_url}/v2/State/Components", json=smd_components)
     if not response.ok:
         print_response("POST", response)
 
@@ -104,7 +104,7 @@ def replicate_component_endpoints():
     smd_components = json.loads(response.text)
 
     print("POST ComponentEndpoints to SMD2")
-    response = requests.post(f"{smd2_base_url}/v2/Inventory/ComponentEndpoints", json=smd_components)
+    response = requests.post(f"{inventory_base_url}/v2/Inventory/ComponentEndpoints", json=smd_components)
     if not response.ok:
         print_response("POST", response)
 
@@ -117,7 +117,7 @@ def replicate_ethernet_interfaces():
 
     print("POST EthernetInterfaces to SMD2")
     for eth in ethernet_interfaces:
-        response = requests.post(f"{smd2_base_url}/v2/Inventory/EthernetInterfaces", json=eth)
+        response = requests.post(f"{inventory_base_url}/v2/Inventory/EthernetInterfaces", json=eth)
         if not response.ok:
             print_response("POST", response)
 
@@ -130,7 +130,7 @@ def replicate_redfish_endpoints():
 
     print("POST RedfishEndpoints to SMD2")
     for redfish_endpoint in redfish_endpoints.get("RedfishEndpoints"):
-        response = requests.post(f"{smd2_base_url}/v2/Inventory/RedfishEndpoints", json=redfish_endpoint)
+        response = requests.post(f"{inventory_base_url}/v2/Inventory/RedfishEndpoints", json=redfish_endpoint)
         if not response.ok:
             print_response("POST", response)
 
@@ -142,7 +142,7 @@ def replicate_service_endpoints():
     smd_service_endpoints = json.loads(response.text)
 
     print("POST ServiceEndpoints to SMD2")
-    response = requests.post(f"{smd2_base_url}/v2/Inventory/ServiceEndpoints", json=smd_service_endpoints)
+    response = requests.post(f"{inventory_base_url}/v2/Inventory/ServiceEndpoints", json=smd_service_endpoints)
     if not response.ok:
         print_response("POST", response)
 
@@ -156,14 +156,14 @@ def test_compare_components(discover_hardware):
 
     smd_components = json.loads(response.text)
 
-    response = requests.get(f"{smd2_base_url}/v2/State/Components")
+    response = requests.get(f"{inventory_base_url}/v2/State/Components")
     if not response.ok:
         print_response("GET", response)
         pytest.fail(f"get {response.url}, code: {response.status_code}")
 
-    smd2_components = json.loads(response.text)
+    inventory_components = json.loads(response.text)
 
-    diff = compare(smd_components.get("Components"), smd2_components.get("Components"))
+    diff = compare(smd_components.get("Components"), inventory_components.get("Components"))
     if diff:
         pytest.fail(f"The Component list from SMD does not match the list from SMD2. diff: {diff}")
 
@@ -175,14 +175,14 @@ def test_compare_components(discover_hardware):
 
     smd_component_endpoints = json.loads(response.text)
 
-    response = requests.get(f"{smd2_base_url}/v2/Inventory/ComponentEndpoints")
+    response = requests.get(f"{inventory_base_url}/v2/Inventory/ComponentEndpoints")
     if not response.ok:
         print_response("GET", response)
         pytest.fail(f"get {response.url}, code: {response.status_code}")
 
-    smd2_component_endpoints = json.loads(response.text)
+    inventory_component_endpoints = json.loads(response.text)
 
-    diff = compare(smd_component_endpoints.get("ComponentEndpoints"), smd2_component_endpoints.get("ComponentEndpoints"))
+    diff = compare(smd_component_endpoints.get("ComponentEndpoints"), inventory_component_endpoints.get("ComponentEndpoints"))
     if diff:
         pytest.fail(f"The ComponentEndpoint list from SMD does not match the list from SMD2. diff: {diff}")
 
@@ -194,14 +194,14 @@ def test_compare_components(discover_hardware):
 
     smd_ethernet_interfaces = json.loads(response.text)
 
-    response = requests.get(f"{smd2_base_url}/v2/Inventory/EthernetInterfaces")
+    response = requests.get(f"{inventory_base_url}/v2/Inventory/EthernetInterfaces")
     if not response.ok:
         print_response("GET", response)
         pytest.fail(f"get {response.url}, code: {response.status_code}")
 
-    smd2_ethernet_interfaces = json.loads(response.text)
+    inventory_ethernet_interfaces = json.loads(response.text)
 
-    diff = compare(smd_ethernet_interfaces, smd2_ethernet_interfaces, exclude_paths=["root['LastUpdate']"])
+    diff = compare(smd_ethernet_interfaces, inventory_ethernet_interfaces, exclude_paths=["root['LastUpdate']"])
     if diff:
         pytest.fail(f"The EthernetInterfaces list from SMD does not match the list from SMD2. diff: {diff}")
 
@@ -213,14 +213,14 @@ def test_compare_components(discover_hardware):
 
     smd_component_endpoints = json.loads(response.text)
 
-    response = requests.get(f"{smd2_base_url}/v2/Inventory/RedfishEndpoints")
+    response = requests.get(f"{inventory_base_url}/v2/Inventory/RedfishEndpoints")
     if not response.ok:
         print_response("GET", response)
         pytest.fail(f"get {response.url}, code: {response.status_code}")
 
-    smd2_redfish_endpoints = json.loads(response.text)
+    inventory_redfish_endpoints = json.loads(response.text)
 
-    diff = compare(smd_component_endpoints.get("RedfishEndpoints"), smd2_redfish_endpoints.get("RedfishEndpoints"))
+    diff = compare(smd_component_endpoints.get("RedfishEndpoints"), inventory_redfish_endpoints.get("RedfishEndpoints"))
     if diff:
         pytest.fail(f"The RedfishEndpoint list from SMD does not match the list from SMD2. diff: {diff}")
 
@@ -232,14 +232,14 @@ def test_compare_components(discover_hardware):
 
     smd_component_endpoints = json.loads(response.text)
 
-    response = requests.get(f"{smd2_base_url}/v2/Inventory/ServiceEndpoints")
+    response = requests.get(f"{inventory_base_url}/v2/Inventory/ServiceEndpoints")
     if not response.ok:
         print_response("GET", response)
         pytest.fail(f"get {response.url}, code: {response.status_code}")
 
-    smd2_redfish_endpoints = json.loads(response.text)
+    inventory_redfish_endpoints = json.loads(response.text)
 
-    diff = compare(smd_component_endpoints.get("ServiceEndpoints"), smd2_redfish_endpoints.get("ServiceEndpoints"))
+    diff = compare(smd_component_endpoints.get("ServiceEndpoints"), inventory_redfish_endpoints.get("ServiceEndpoints"))
     if diff:
         pytest.fail(f"The ServiceEndpoint list from SMD does not match the list from SMD2. diff: {diff}")
 

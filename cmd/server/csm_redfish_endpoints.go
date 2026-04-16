@@ -14,9 +14,9 @@ import (
 	"strings"
 	"time"
 
-	v1 "github.com/OpenCHAMI/smd2/apis/smd2.openchami.org/v1"
-	"github.com/OpenCHAMI/smd2/cmd/plugins"
-	"github.com/OpenCHAMI/smd2/internal/storage"
+	v1 "github.com/OpenCHAMI/inventory-service/apis/inventory-service.openchami.org/v1"
+	"github.com/OpenCHAMI/inventory-service/cmd/plugins"
+	"github.com/OpenCHAMI/inventory-service/internal/storage"
 	"github.com/go-chi/chi/v5"
 	"github.com/openchami/fabrica/pkg/events"
 	"github.com/openchami/fabrica/pkg/resource"

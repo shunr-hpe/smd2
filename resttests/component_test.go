@@ -22,7 +22,7 @@ import (
 
 // ─── Request / response shapes ────────────────────────────────────────────────
 // These mirror the structures in cmd/server/models_generated.go and
-// apis/smd2.openchami.org/v1/component_types.go without importing package main.
+// apis/inventory-service.openchami.org/v1/component_types.go without importing package main.
 
 type componentMetadata struct {
 	Name      string            `json:"name,omitempty"`

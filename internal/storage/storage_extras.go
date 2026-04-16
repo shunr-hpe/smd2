@@ -10,10 +10,10 @@ import (
 
 	entsql "entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqljson"
-	v1 "github.com/OpenCHAMI/smd2/apis/smd2.openchami.org/v1"
-	"github.com/OpenCHAMI/smd2/internal/storage/ent"
-	entpredicate "github.com/OpenCHAMI/smd2/internal/storage/ent/predicate"
-	entresource "github.com/OpenCHAMI/smd2/internal/storage/ent/resource"
+	v1 "github.com/OpenCHAMI/inventory-service/apis/inventory-service.openchami.org/v1"
+	"github.com/OpenCHAMI/inventory-service/internal/storage/ent"
+	entpredicate "github.com/OpenCHAMI/inventory-service/internal/storage/ent/predicate"
+	entresource "github.com/OpenCHAMI/inventory-service/internal/storage/ent/resource"
 )
 
 // LoadComponentByID loads a single Component resource by its Spec.ID from Ent storage

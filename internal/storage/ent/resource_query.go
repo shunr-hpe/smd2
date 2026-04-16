@@ -12,10 +12,10 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/OpenCHAMI/smd2/internal/storage/ent/annotation"
-	"github.com/OpenCHAMI/smd2/internal/storage/ent/label"
-	"github.com/OpenCHAMI/smd2/internal/storage/ent/predicate"
-	"github.com/OpenCHAMI/smd2/internal/storage/ent/resource"
+	"github.com/OpenCHAMI/inventory-service/internal/storage/ent/annotation"
+	"github.com/OpenCHAMI/inventory-service/internal/storage/ent/label"
+	"github.com/OpenCHAMI/inventory-service/internal/storage/ent/predicate"
+	"github.com/OpenCHAMI/inventory-service/internal/storage/ent/resource"
 )
 
 // ResourceQuery is the builder for querying Resource entities.

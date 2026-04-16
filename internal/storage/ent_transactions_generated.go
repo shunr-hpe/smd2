@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/OpenCHAMI/smd2/internal/storage/ent"
+	"github.com/OpenCHAMI/inventory-service/internal/storage/ent"
 )
 
 // WithTx executes fn within a database transaction.

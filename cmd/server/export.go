@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 
-	"github.com/OpenCHAMI/smd2/internal/storage"
+	"github.com/OpenCHAMI/inventory-service/internal/storage"
 )
 
 func newExportCommand() *cobra.Command {
@@ -35,15 +35,15 @@ This is useful for:
 
 Examples:
   # Export all resources to YAML
-  smd2 export --format yaml --output ./backup
+  inventory_service export --format yaml --output ./backup
 
   # Export specific resource types
-  smd2 export --kinds Component --output ./component-backup
-  smd2 export --kinds ComponentEndpoint --output ./componentendpoint-backup
-  smd2 export --kinds EthernetInterface --output ./ethernetinterface-backup
-  smd2 export --kinds Group --output ./group-backup
-  smd2 export --kinds RedfishEndpoint --output ./redfishendpoint-backup
-  smd2 export --kinds ServiceEndpoint --output ./serviceendpoint-backup
+  inventory_service export --kinds Component --output ./component-backup
+  inventory_service export --kinds ComponentEndpoint --output ./componentendpoint-backup
+  inventory_service export --kinds EthernetInterface --output ./ethernetinterface-backup
+  inventory_service export --kinds Group --output ./group-backup
+  inventory_service export --kinds RedfishEndpoint --output ./redfishendpoint-backup
+  inventory_service export --kinds ServiceEndpoint --output ./serviceendpoint-backup
 `,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runExport(cmd.Context(), format, output, kinds, perType)

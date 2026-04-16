@@ -12,9 +12,9 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"github.com/OpenCHAMI/smd2/internal/storage/ent/annotation"
-	"github.com/OpenCHAMI/smd2/internal/storage/ent/label"
-	"github.com/OpenCHAMI/smd2/internal/storage/ent/resource"
+	"github.com/OpenCHAMI/inventory-service/internal/storage/ent/annotation"
+	"github.com/OpenCHAMI/inventory-service/internal/storage/ent/label"
+	"github.com/OpenCHAMI/inventory-service/internal/storage/ent/resource"
 )
 
 // ent aliases to avoid import conflicts in user's code.

@@ -1,4 +1,4 @@
-// Copyright © 2025 OpenCHAMI a Series of LF Projects, LLC
+// Copyright © 2025-2026 OpenCHAMI a Series of LF Projects, LLC
 //
 // SPDX-License-Identifier: MIT
 //
@@ -35,7 +35,7 @@ package client
 import (
 	"github.com/openchami/fabrica/pkg/fabrica"
 
-	v1 "github.com/OpenCHAMI/smd2/apis/smd2.openchami.org/v1"
+	v1 "github.com/OpenCHAMI/inventory-service/apis/inventory-service.openchami.org/v1"
 )
 
 // CreateComponentRequest represents a request to create a Component

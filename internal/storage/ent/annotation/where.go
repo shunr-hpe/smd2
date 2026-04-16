@@ -5,7 +5,7 @@ package annotation
 import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"github.com/OpenCHAMI/smd2/internal/storage/ent/predicate"
+	"github.com/OpenCHAMI/inventory-service/internal/storage/ent/predicate"
 )
 
 // ID filters vertices based on their ID field.

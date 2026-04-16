@@ -18,10 +18,10 @@ import (
 	"github.com/openchami/fabrica/pkg/reconcile"
 	fabricaStorage "github.com/openchami/fabrica/pkg/storage"
 
-	"github.com/OpenCHAMI/smd2/internal/storage/ent"
-	entresource "github.com/OpenCHAMI/smd2/internal/storage/ent/resource"
+	"github.com/OpenCHAMI/inventory-service/internal/storage/ent"
+	entresource "github.com/OpenCHAMI/inventory-service/internal/storage/ent/resource"
 
-	v1 "github.com/OpenCHAMI/smd2/apis/smd2.openchami.org/v1"
+	v1 "github.com/OpenCHAMI/inventory-service/apis/inventory-service.openchami.org/v1"
 )
 
 // ErrNotFound indicates that a resource was not found

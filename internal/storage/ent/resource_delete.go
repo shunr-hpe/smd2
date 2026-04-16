@@ -8,8 +8,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/OpenCHAMI/smd2/internal/storage/ent/predicate"
-	"github.com/OpenCHAMI/smd2/internal/storage/ent/resource"
+	"github.com/OpenCHAMI/inventory-service/internal/storage/ent/predicate"
+	"github.com/OpenCHAMI/inventory-service/internal/storage/ent/resource"
 )
 
 // ResourceDelete is the builder for deleting a Resource entity.

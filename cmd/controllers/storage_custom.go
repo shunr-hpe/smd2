@@ -7,8 +7,8 @@ package controllers
 import (
 	"context"
 
-	v1 "github.com/OpenCHAMI/smd2/apis/smd2.openchami.org/v1"
-	"github.com/OpenCHAMI/smd2/internal/storage"
+	v1 "github.com/OpenCHAMI/inventory-service/apis/inventory-service.openchami.org/v1"
+	"github.com/OpenCHAMI/inventory-service/internal/storage"
 )
 
 // EntStorage implements the plugins.Storage interface by delegating to the

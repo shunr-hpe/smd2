@@ -10,9 +10,9 @@ import (
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 
-	v1 "github.com/OpenCHAMI/smd2/apis/smd2.openchami.org/v1"
-	"github.com/OpenCHAMI/smd2/cmd/plugins"
-	"github.com/OpenCHAMI/smd2/internal/storage"
+	v1 "github.com/OpenCHAMI/inventory-service/apis/inventory-service.openchami.org/v1"
+	"github.com/OpenCHAMI/inventory-service/cmd/plugins"
+	"github.com/OpenCHAMI/inventory-service/internal/storage"
 )
 
 func newImportCommand() *cobra.Command {
@@ -41,13 +41,13 @@ Import modes:
 
 Examples:
   # Import from backup directory
-  smd2 import --input ./backup
+  inventory_service import --input ./backup
 
   # Dry run to preview changes
-  smd2 import --input ./backup --dry-run
+  inventory_service import --input ./backup --dry-run
 
   # Replace all resources
-  smd2 import --input ./backup --mode replace
+  inventory_service import --input ./backup --mode replace
 `,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runImport(cmd.Context(), input, mode, dryRun, skipExisting)

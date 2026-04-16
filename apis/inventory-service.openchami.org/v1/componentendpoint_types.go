@@ -20,8 +20,9 @@ type ComponentEndpointSpec struct {
 	Description string `json:"description,omitempty" validate:"max=200"`
 	ID          string `json:"ID"`
 
-	Type           string `json:"Type"`
-	Domain         string `json:"Domain,omitempty"`
+	Type   string `json:"Type"`
+	Domain string `json:"Domain,omitempty"`
+
 	FQDN           string `json:"FQDN,omitempty"`
 	RedfishType    string `json:"RedfishType"`
 	RedfishSubtype string `json:"RedfishSubtype"`
@@ -29,18 +30,18 @@ type ComponentEndpointSpec struct {
 	UUID           string `json:"UUID,omitempty"`
 	OdataID        string `json:"OdataID"`
 	RfEndpointID   string `json:"RedfishEndpointID"`
+	Enabled        bool   `json:"Enabled"`
 
-	Enabled               bool   `json:"Enabled"`
 	RedfishEndpointFQDN   string `json:"RedfishEndpointFQDN,omitempty"`
 	URL                   string `json:"RedfishURL,omitempty"`
 	ComponentEndpointType string `json:"ComponentEndpointType"`
 
 	RedfishChassisInfo *ComponentChassisInfo `json:"RedfishChassisInfo,omitempty"`
-
 	RedfishSystemInfo  *ComponentSystemInfo  `json:"RedfishSystemInfo,omitempty"`
 	RedfishManagerInfo *ComponentManagerInfo `json:"RedfishManagerInfo,omitempty"`
 	RedfishPDUInfo     *ComponentPDUInfo     `json:"RedfishPDUInfo,omitempty"`
-	RedfishOutletInfo  any                   `json:"RedfishOutletInfo,omitempty"`
+
+	RedfishOutletInfo any `json:"RedfishOutletInfo,omitempty"`
 }
 
 type ComponentEndpointStatus struct {
@@ -72,16 +73,16 @@ type ResourceID struct {
 	Oid string `json:"@odata.id"`
 }
 type ComponentChassisInfo struct {
-	Name string `json:"Name,omitempty"`
-
+	Name    string          `json:"Name,omitempty"`
 	Actions *ChassisActions `json:"Actions,omitempty"`
 }
 type ComponentSystemInfo struct {
-	Name       string                 `json:"Name,omitempty"`
+	Name string `json:"Name,omitempty"`
+
 	Actions    *ComputerSystemActions `json:"Actions,omitempty"`
 	EthNICInfo []*EthernetNICInfo     `json:"EthernetNICInfo,omitempty"`
-	PowerCtlInfo
 
+	PowerCtlInfo
 	Controls      []*Control     `json:"Controls,omitempty"`
 	SerialConsole *SerialConsole `json:"SerialConsole,omitempty"`
 }
@@ -91,8 +92,7 @@ type PowerCtlInfo struct {
 }
 type PowerControl struct {
 	ResourceID
-	MemberId string `json:"MemberId,omitempty"`
-
+	MemberId           string        `json:"MemberId,omitempty"`
 	Name               string        `json:"Name,omitempty"`
 	PowerCapacityWatts int           `json:"PowerCapacityWatts,omitempty"`
 	PowerConsumedWatts interface{}   `json:"PowerConsumedWatts,omitempty"`

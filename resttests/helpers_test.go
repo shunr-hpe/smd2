@@ -52,7 +52,7 @@ func TestMain(m *testing.M) {
 	}
 
 	// ── 2. Build the server binary ────────────────────────────────────────────
-	binaryName := "smd2-server-test"
+	binaryName := "inventory-service-test"
 	if runtime.GOOS == "windows" {
 		binaryName += ".exe"
 	}

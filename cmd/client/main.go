@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT
 //
-// This file provides a Cobra-based CLI for the smd2 API.
+// This file provides a Cobra-based CLI for the inventory_service API.
 // Generated from: pkg/codegen/templates/client-cmd.go.tmpl
 //
 // To modify the CLI:
@@ -21,16 +21,16 @@
 //
 // Global flags (available for all commands):
 //
-//	--server       Server URL (env: SMD2_SERVER)
-//	--timeout      Request timeout (env: SMD2_TIMEOUT)
-//	--output, -o   Output format: table, json, yaml (env: SMD2_OUTPUT)
-//	--version, -v  API version to request: v1, v2beta1, etc. (env: SMD2_VERSION)
-//	--config       Config file path (default: ~/.smd2-cli.yaml)
+//	--server       Server URL (env: INVENTORY_SERVICE_SERVER)
+//	--timeout      Request timeout (env: INVENTORY_SERVICE_TIMEOUT)
+//	--output, -o   Output format: table, json, yaml (env: INVENTORY_SERVICE_OUTPUT)
+//	--version, -v  API version to request: v1, v2beta1, etc. (env: INVENTORY_SERVICE_VERSION)
+//	--config       Config file path (default: ~/.inventory_service-cli.yaml)
 //
 // Configuration sources (in order of precedence):
 //  1. Command-line flags
-//  2. Environment variables (SMD2_*)
-//  3. Config file (~/.smd2-cli.yaml)
+//  2. Environment variables (INVENTORY_SERVICE_*)
+//  3. Config file (~/.inventory_service-cli.yaml)
 //  4. Default values
 //
 // Usage examples:
@@ -51,8 +51,8 @@
 //	client component create --spec '{"name":"component-01","description":"Example Component"}'
 //
 //	# Use environment variables
-//	export SMD2_SERVER=https://smd2.example.com
-//	export SMD2_VERSION=v2beta1
+//	export INVENTORY_SERVICE_SERVER=https://inventory_service.example.com
+//	export INVENTORY_SERVICE_VERSION=v2beta1
 //	client component list
 //
 // To add custom commands:
@@ -78,7 +78,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/OpenCHAMI/smd2/pkg/client"
+	"github.com/OpenCHAMI/inventory-service/pkg/client"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -100,16 +100,16 @@ func main() {
 
 var rootCmd = &cobra.Command{
 	Use:   filepath.Base(os.Args[0]),
-	Short: "smd2 CLI",
-	Long:  `A command-line interface for managing smd2 resources.`,
+	Short: "inventory_service CLI",
+	Long:  `A command-line interface for managing inventory_service resources.`,
 }
 
 func init() {
 	cobra.OnInitialize(initConfig)
 
 	// Global flags
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.smd2-cli.yaml)")
-	rootCmd.PersistentFlags().StringVar(&serverURL, "server", "http://localhost:8080", "smd2 server URL")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.inventory_service-cli.yaml)")
+	rootCmd.PersistentFlags().StringVar(&serverURL, "server", "http://localhost:8080", "inventory_service server URL")
 	rootCmd.PersistentFlags().DurationVar(&timeout, "timeout", 30*time.Second, "request timeout")
 	rootCmd.PersistentFlags().StringVarP(&output, "output", "o", "table", "output format: table, json, yaml")
 	rootCmd.PersistentFlags().StringVarP(&apiVersion, "version", "v", "", "API version to request (e.g., v1, v2beta1)")
@@ -121,7 +121,7 @@ func init() {
 	viper.BindPFlag("version", rootCmd.PersistentFlags().Lookup("version"))
 
 	// Environment variable support
-	viper.SetEnvPrefix("SMD2")
+	viper.SetEnvPrefix("INVENTORY_SERVICE")
 	viper.AutomaticEnv()
 
 	// Add resource commands
@@ -146,7 +146,7 @@ func initConfig() {
 
 		viper.AddConfigPath(home)
 		viper.SetConfigType("yaml")
-		viper.SetConfigName(".smd2-cli")
+		viper.SetConfigName(".inventory_service-cli")
 	}
 
 	if err := viper.ReadInConfig(); err == nil {

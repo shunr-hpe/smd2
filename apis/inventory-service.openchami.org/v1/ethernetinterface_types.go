@@ -16,8 +16,6 @@ type EthernetInterface struct {
 }
 
 type EthernetInterfaceSpec struct {
-	// todo resolve what to do about the case differences
-	// SMD uses Description and fabrica uses description
 	Description string      `json:"Description,omitempty" validate:"max=200"`
 	ID          string      `json:"ID"`
 	MACAddr     string      `json:"MACAddress"`

@@ -6,7 +6,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/OpenCHAMI/smd2/internal/storage/ent"
+	"github.com/OpenCHAMI/inventory-service/internal/storage/ent"
 )
 
 // The AnnotationFunc type is an adapter to allow the use of ordinary
