@@ -4,8 +4,8 @@ package resources
 import (
 	"fmt"
 
-	v1 "github.com/OpenCHAMI/inventory-service/apis/inventory-service.openchami.org/v1"
 	"github.com/openchami/fabrica/pkg/codegen"
+	v1 "github.com/OpenCHAMI/inventory-service/apis/inventory-service.openchami.org/v1"
 )
 
 // RegisterAllResources registers all discovered resources with the generator.
@@ -22,6 +22,9 @@ func RegisterAllResources(gen *codegen.Generator) error {
 	}
 	if err := gen.RegisterResource(&v1.Group{}); err != nil {
 		return fmt.Errorf("failed to register Group: %w", err)
+	}
+	if err := gen.RegisterResource(&v1.Hardware{}); err != nil {
+		return fmt.Errorf("failed to register Hardware: %w", err)
 	}
 	if err := gen.RegisterResource(&v1.RedfishEndpoint{}); err != nil {
 		return fmt.Errorf("failed to register RedfishEndpoint: %w", err)

@@ -226,6 +226,53 @@ func ListgroupsByLabels(ctx context.Context, labels map[string]string) ([]*v1.Gr
 	return out, nil
 }
 
+// Queryhardwares returns a query builder for hardwares
+func Queryhardwares(ctx context.Context) *ent.ResourceQuery {
+	return QueryResources(ctx, "Hardware")
+}
+
+// GetHardwareByUID loads a single Hardware by UID
+func GetHardwareByUID(ctx context.Context, uid string) (*v1.Hardware, error) {
+	ensureEntClient()
+	r, err := entClient.Resource.Query().
+		Where(entresource.UIDEQ(uid), entresource.KindEQ("Hardware")).
+		WithLabels().
+		WithAnnotations().
+		Only(ctx)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, ErrNotFound
+		}
+		return nil, fmt.Errorf("failed to load Hardware %s: %w", uid, err)
+	}
+	v, err := FromEntResource(ctx, r)
+	if err != nil {
+		return nil, err
+	}
+	return v.(*v1.Hardware), nil
+}
+
+// ListhardwaresByLabels returns hardwares matching all provided labels
+func ListhardwaresByLabels(ctx context.Context, labels map[string]string) ([]*v1.Hardware, error) {
+	q, err := QueryResourcesByLabels(ctx, "Hardware", labels)
+	if err != nil {
+		return nil, err
+	}
+	rs, err := q.WithLabels().WithAnnotations().All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]*v1.Hardware, 0, len(rs))
+	for _, r := range rs {
+		v, err := FromEntResource(ctx, r)
+		if err != nil {
+			continue
+		}
+		out = append(out, v.(*v1.Hardware))
+	}
+	return out, nil
+}
+
 // Queryredfishendpoints returns a query builder for redfishendpoints
 func Queryredfishendpoints(ctx context.Context) *ent.ResourceQuery {
 	return QueryResources(ctx, "RedfishEndpoint")
