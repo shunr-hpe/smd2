@@ -2,7 +2,7 @@
 // Template: server/handlers.go.tmpl
 // Generated: 2026-04-22T11:55:49-06:00
 //
-// Copyright © <no value> OpenCHAMI a Series of LF Projects, LLC
+// # Copyright © 2026 OpenCHAMI a Series of LF Projects, LLC
 //
 // SPDX-License-Identifier: MIT
 //
