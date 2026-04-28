@@ -26,13 +26,11 @@ func GetHardwaresCsm(w http.ResponseWriter, r *http.Request) {
 		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to load hardwares: %w", err))
 		return
 	}
-	hardwareArray := HardwareArray{
-		Hardware: make([]*v1.HardwareSpec, len(hardwares)),
-	}
+	hardwareCsm := make([]*v1.HardwareSpec, len(hardwares))
 	for i, h := range hardwares {
-		hardwareArray.Hardware[i] = &h.Spec
+		hardwareCsm[i] = &h.Spec
 	}
-	respondJSON(w, http.StatusOK, hardwareArray)
+	respondJSON(w, http.StatusOK, hardwareCsm)
 }
 
 // GetHardwareCsm returns a specific Hardware resource by xname (Spec.ID)

@@ -79,6 +79,7 @@ def discover_hardware():
     replicate_ethernet_interfaces()
     replicate_redfish_endpoints()
     replicate_service_endpoints()
+    replicate_hardware()
 
     yield
 
@@ -143,6 +144,19 @@ def replicate_service_endpoints():
 
     print("POST ServiceEndpoints to the inventory service")
     response = requests.post(f"{inventory_base_url}/v2/Inventory/ServiceEndpoints", json=smd_service_endpoints)
+    if not response.ok:
+        print_response("POST", response)
+
+
+def replicate_hardware():
+    response = requests.get(f"{smd_base_url}/v2/Inventory/Hardware")
+    if not response.ok:
+        print_response("GET", response)
+    smd_hardware = json.loads(response.text)
+
+    print("POST Hardware to the inventory service")
+    smd_hardware_post_obj = { "Hardware" : smd_hardware }
+    response = requests.post(f"{inventory_base_url}/v2/Inventory/Hardware", json=smd_hardware_post_obj)
     if not response.ok:
         print_response("POST", response)
 
@@ -242,6 +256,25 @@ def test_compare_components(discover_hardware):
     diff = compare(smd_component_endpoints.get("ServiceEndpoints"), inventory_redfish_endpoints.get("ServiceEndpoints"))
     if diff:
         pytest.fail(f"The ServiceEndpoint list from SMD does not match the list from the inventory service. diff: {diff}")
+
+    # /Inventory/Hardware
+    response = requests.get(f"{smd_base_url}/v2/Inventory/Hardware")
+    if response.status_code != 200:
+        print_response("GET", response)
+        pytest.fail(f" get {response.url}, code: {response.status_code}")
+
+    smd_hardware = json.loads(response.text)
+
+    response = requests.get(f"{inventory_base_url}/v2/Inventory/Hardware")
+    if not response.ok:
+        print_response("GET", response)
+        pytest.fail(f"get {response.url}, code: {response.status_code}")
+
+    inventory_hardware = json.loads(response.text)
+
+    diff = compare(smd_hardware, inventory_hardware)
+    if diff:
+        pytest.fail(f"The Hardware list from SMD does not match the list from the inventory service. diff: {diff}")
 
 
 def get_discovered_nodes(redfishEndpoints):
