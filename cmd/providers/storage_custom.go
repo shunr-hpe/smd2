@@ -83,6 +83,23 @@ func (s *EntStorage) DeleteGroup(ctx context.Context, uid string) error {
 	return storage.DeleteGroup(ctx, uid)
 }
 
+func (s *EntStorage) LoadAllHardwares(ctx context.Context) ([]*v1.Hardware, error) {
+	return storage.LoadAllHardwares(ctx)
+}
+
+func (s *EntStorage) LoadHardware(ctx context.Context, uid string) (*v1.Hardware, error) {
+	return storage.LoadHardware(ctx, uid)
+}
+
+func (s *EntStorage) SaveHardware(ctx context.Context, resource *v1.Hardware) error {
+	resource.ID = resource.Spec.ID
+	return storage.SaveHardware(ctx, resource)
+}
+
+func (s *EntStorage) DeleteHardware(ctx context.Context, uid string) error {
+	return storage.DeleteHardware(ctx, uid)
+}
+
 func (s *EntStorage) LoadAllRedfishEndpoints(ctx context.Context) ([]*v1.RedfishEndpoint, error) {
 	return storage.LoadAllRedfishEndpoints(ctx)
 }
@@ -139,6 +156,10 @@ func (s *EntStorage) LoadServiceEndpointByID(ctx context.Context, id string) (*v
 
 func (s *EntStorage) LoadGroupByLabel(ctx context.Context, label string) (*v1.Group, error) {
 	return storage.LoadGroupByLabel(ctx, label)
+}
+
+func (s *EntStorage) LoadHardwareByID(ctx context.Context, id string) (*v1.Hardware, error) {
+	return storage.LoadHardwareByID(ctx, id)
 }
 
 func (s *EntStorage) LoadServiceEndpointsByRedfishType(ctx context.Context, redfishType string) ([]*v1.ServiceEndpoint, error) {

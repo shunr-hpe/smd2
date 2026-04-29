@@ -1,0 +1,38 @@
+project:
+    name: inventory-service
+    module: github.com/OpenCHAMI/inventory-service
+    created: 2026-04-20T16:00:47.173001954-06:00
+features:
+    validation:
+        enabled: true
+        mode: strict
+    events:
+        enabled: false
+        bus_type: memory
+    conditional:
+        enabled: true
+        etag_algorithm: sha256
+    auth:
+        enabled: false
+    storage:
+        enabled: true
+        type: ent
+        db_driver: sqlite3
+    reconciliation:
+        enabled: false
+        worker_count: 5
+        requeue_delay: 5
+    security:
+        authn:
+            enabled: false
+        authz:
+            enabled: false
+            mode: enforce
+generation:
+    handlers: true
+    storage: true
+    client: true
+    openapi: true
+    events: false
+    middleware: true
+    reconciliation: false

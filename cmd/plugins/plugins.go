@@ -39,6 +39,11 @@ type Storage interface {
 	SaveRedfishEndpoint(ctx context.Context, resource *v1.RedfishEndpoint) error
 	DeleteRedfishEndpoint(ctx context.Context, uid string) error
 
+	LoadAllHardwares(ctx context.Context) ([]*v1.Hardware, error)
+	LoadHardware(ctx context.Context, uid string) (*v1.Hardware, error)
+	SaveHardware(ctx context.Context, resource *v1.Hardware) error
+	DeleteHardware(ctx context.Context, uid string) error
+
 	LoadAllServiceEndpoints(ctx context.Context) ([]*v1.ServiceEndpoint, error)
 	LoadServiceEndpoint(ctx context.Context, uid string) (*v1.ServiceEndpoint, error)
 	SaveServiceEndpoint(ctx context.Context, resource *v1.ServiceEndpoint) error

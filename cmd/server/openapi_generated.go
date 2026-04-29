@@ -108,6 +108,7 @@ func GenerateOpenAPISpec() *openapi3.T {
 	registerComponentEndpointPaths(spec)
 	registerEthernetInterfacePaths(spec)
 	registerGroupPaths(spec)
+	registerHardwarePaths(spec)
 	registerRedfishEndpointPaths(spec)
 	registerServiceEndpointPaths(spec)
 
@@ -716,6 +717,157 @@ func registerGroupPaths(spec *openapi3.T) {
 	// Add paths to spec
 	spec.Paths.Set("/groups", collectionPath)
 	spec.Paths.Set("/groups/{uid}", itemPath)
+}
+
+// registerHardwarePaths registers OpenAPI paths for Hardware resources
+func registerHardwarePaths(spec *openapi3.T) {
+	// Generate schemas from Go types - NO ANNOTATIONS NEEDED
+	resourceSchema, _ := openapi3gen.NewSchemaRefForValue(&v1.Hardware{}, spec.Components.Schemas)
+	spec.Components.Schemas["Hardware"] = resourceSchema
+
+	createReqSchema, _ := openapi3gen.NewSchemaRefForValue(&CreateHardwareRequest{}, spec.Components.Schemas)
+	spec.Components.Schemas["CreateHardwareRequest"] = createReqSchema
+
+	updateReqSchema, _ := openapi3gen.NewSchemaRefForValue(&UpdateHardwareRequest{}, spec.Components.Schemas)
+	spec.Components.Schemas["UpdateHardwareRequest"] = updateReqSchema
+
+	// Error response schema
+	if _, exists := spec.Components.Schemas["ErrorResponse"]; !exists {
+		errorSchema := openapi3.NewObjectSchema().
+			WithProperty("error", openapi3.NewStringSchema()).
+			WithRequired([]string{"error"})
+		spec.Components.Schemas["ErrorResponse"] = &openapi3.SchemaRef{Value: errorSchema}
+	}
+
+	// DELETE response schema
+	if _, exists := spec.Components.Schemas["DeleteResponse"]; !exists {
+		deleteSchema, _ := openapi3gen.NewSchemaRefForValue(&DeleteResponse{}, spec.Components.Schemas)
+		spec.Components.Schemas["DeleteResponse"] = deleteSchema
+	}
+
+	// List Hardwares operation
+	listOp := openapi3.NewOperation()
+	listOp.OperationID = "listHardwares"
+	listOp.Summary = "List all Hardware resources"
+	listOp.Description = "Returns a list of all Hardware resources in the inventory"
+	listOp.Tags = []string{"Hardware"}
+	listOp.Responses = openapi3.NewResponses()
+	arraySchema := openapi3.NewArraySchema()
+	arraySchema.Items = &openapi3.SchemaRef{Ref: "#/components/schemas/Hardware"}
+	listOp.Responses.Set("200", &openapi3.ResponseRef{
+		Value: openapi3.NewResponse().
+			WithDescription("Successful response").
+			WithJSONSchemaRef(&openapi3.SchemaRef{Value: arraySchema}),
+	})
+	listOp.Responses.Set("500", errorResponse())
+
+	// Create Hardware operation
+	createOp := openapi3.NewOperation()
+	createOp.OperationID = "createHardware"
+	createOp.Summary = "Create a new Hardware resource"
+	createOp.Description = "Creates a new Hardware resource with the provided specification"
+	createOp.Tags = []string{"Hardware"}
+	createOp.RequestBody = &openapi3.RequestBodyRef{
+		Value: openapi3.NewRequestBody().
+			WithRequired(true).
+			WithJSONSchemaRef(&openapi3.SchemaRef{
+				Ref: "#/components/schemas/CreateHardwareRequest",
+			}),
+	}
+	createOp.Responses = openapi3.NewResponses()
+	createOp.Responses.Set("201", &openapi3.ResponseRef{
+		Value: openapi3.NewResponse().
+			WithDescription("Resource created successfully").
+			WithJSONSchemaRef(&openapi3.SchemaRef{
+				Ref: "#/components/schemas/Hardware",
+			}),
+	})
+	createOp.Responses.Set("400", errorResponse())
+	createOp.Responses.Set("500", errorResponse())
+
+	// Get Hardware operation
+	getOp := openapi3.NewOperation()
+	getOp.OperationID = "getHardware"
+	getOp.Summary = "Get a specific Hardware resource"
+	getOp.Description = "Returns details of a specific Hardware resource by UID"
+	getOp.Tags = []string{"Hardware"}
+	getOp.Responses = openapi3.NewResponses()
+	getOp.Responses.Set("200", &openapi3.ResponseRef{
+		Value: openapi3.NewResponse().
+			WithDescription("Successful response").
+			WithJSONSchemaRef(&openapi3.SchemaRef{
+				Ref: "#/components/schemas/Hardware",
+			}),
+	})
+	getOp.Responses.Set("404", errorResponse())
+	getOp.Responses.Set("500", errorResponse())
+
+	// Update Hardware operation
+	updateOp := openapi3.NewOperation()
+	updateOp.OperationID = "updateHardware"
+	updateOp.Summary = "Update a Hardware resource"
+	updateOp.Description = "Updates an existing Hardware resource with new values"
+	updateOp.Tags = []string{"Hardware"}
+	updateOp.RequestBody = &openapi3.RequestBodyRef{
+		Value: openapi3.NewRequestBody().
+			WithRequired(true).
+			WithJSONSchemaRef(&openapi3.SchemaRef{
+				Ref: "#/components/schemas/UpdateHardwareRequest",
+			}),
+	}
+	updateOp.Responses = openapi3.NewResponses()
+	updateOp.Responses.Set("200", &openapi3.ResponseRef{
+		Value: openapi3.NewResponse().
+			WithDescription("Resource updated successfully").
+			WithJSONSchemaRef(&openapi3.SchemaRef{
+				Ref: "#/components/schemas/Hardware",
+			}),
+	})
+	updateOp.Responses.Set("400", errorResponse())
+	updateOp.Responses.Set("404", errorResponse())
+	updateOp.Responses.Set("500", errorResponse())
+
+	// Delete Hardware operation
+	deleteOp := openapi3.NewOperation()
+	deleteOp.OperationID = "deleteHardware"
+	deleteOp.Summary = "Delete a Hardware resource"
+	deleteOp.Description = "Removes a Hardware resource from the inventory"
+	deleteOp.Tags = []string{"Hardware"}
+	deleteOp.Responses = openapi3.NewResponses()
+	deleteOp.Responses.Set("200", &openapi3.ResponseRef{
+		Value: openapi3.NewResponse().
+			WithDescription("Resource deleted successfully").
+			WithJSONSchemaRef(&openapi3.SchemaRef{
+				Ref: "#/components/schemas/DeleteResponse",
+			}),
+	})
+	deleteOp.Responses.Set("400", errorResponse())
+	deleteOp.Responses.Set("404", errorResponse())
+	deleteOp.Responses.Set("500", errorResponse())
+
+	// Create path items
+	collectionPath := &openapi3.PathItem{
+		Get:  listOp,
+		Post: createOp,
+	}
+
+	uidParam := openapi3.NewPathParameter("uid").
+		WithDescription("Unique identifier of the Hardware resource").
+		WithRequired(true).
+		WithSchema(openapi3.NewStringSchema())
+
+	itemPath := &openapi3.PathItem{
+		Get:    getOp,
+		Put:    updateOp,
+		Delete: deleteOp,
+		Parameters: []*openapi3.ParameterRef{
+			{Value: uidParam},
+		},
+	}
+
+	// Add paths to spec
+	spec.Paths.Set("/hardwares", collectionPath)
+	spec.Paths.Set("/hardwares/{uid}", itemPath)
 }
 
 // registerRedfishEndpointPaths registers OpenAPI paths for RedfishEndpoint resources

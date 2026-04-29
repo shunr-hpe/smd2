@@ -558,6 +558,93 @@ func (c *Client) DeleteGroup(ctx context.Context, uid string) error {
 	return nil
 }
 
+// GetHardwares retrieves all hardwares
+func (c *Client) GetHardwares(ctx context.Context) ([]v1.Hardware, error) {
+	var response []v1.Hardware
+	if err := c.doRequest(ctx, "GET", "/hardwares", nil, &response); err != nil {
+		return nil, err
+	}
+	return response, nil
+}
+
+// GetHardware retrieves a specific Hardware by UID
+func (c *Client) GetHardware(ctx context.Context, uid string) (*v1.Hardware, error) {
+	var result v1.Hardware
+	endpoint := fmt.Sprintf("/hardwares/%s", uid)
+	if err := c.doRequest(ctx, "GET", endpoint, nil, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// CreateHardware creates a new Hardware
+func (c *Client) CreateHardware(ctx context.Context, req CreateHardwareRequest) (*v1.Hardware, error) {
+	var result v1.Hardware
+	if err := c.doRequest(ctx, "POST", "/hardwares", req, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// UpdateHardware updates an existing Hardware
+func (c *Client) UpdateHardware(ctx context.Context, uid string, req UpdateHardwareRequest) (*v1.Hardware, error) {
+	var result v1.Hardware
+	endpoint := fmt.Sprintf("/hardwares/%s", uid)
+	if err := c.doRequest(ctx, "PUT", endpoint, req, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// PatchHardware patches an existing Hardware spec with the specified patch data and content type
+func (c *Client) PatchHardware(ctx context.Context, uid string, patchData []byte, contentType string) (*v1.Hardware, error) {
+	var result v1.Hardware
+	endpoint := fmt.Sprintf("/hardwares/%s", uid)
+	if err := c.doPatchRequest(ctx, endpoint, patchData, contentType, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// UpdateHardwareStatus updates only the status of an existing Hardware
+// This method is intended for controllers, reconcilers, and monitoring systems.
+// It preserves the spec and only updates the status portion of the resource.
+func (c *Client) UpdateHardwareStatus(ctx context.Context, uid string, status v1.HardwareStatus) (*v1.Hardware, error) {
+	var result v1.Hardware
+	endpoint := fmt.Sprintf("/hardwares/%s/status", uid)
+	if err := c.doRequest(ctx, "PUT", endpoint, status, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// PatchHardwareStatus patches only the status of an existing Hardware
+// Supports JSON Merge Patch by default. Use PatchHardwareStatusWithType for other patch formats.
+func (c *Client) PatchHardwareStatus(ctx context.Context, uid string, patchData []byte) (*v1.Hardware, error) {
+	return c.PatchHardwareStatusWithType(ctx, uid, patchData, "application/merge-patch+json")
+}
+
+// PatchHardwareStatusWithType patches status with a specific patch content type
+// Supported types: application/merge-patch+json, application/json-patch+json, application/fabrica-patch+json
+func (c *Client) PatchHardwareStatusWithType(ctx context.Context, uid string, patchData []byte, contentType string) (*v1.Hardware, error) {
+	var result v1.Hardware
+	endpoint := fmt.Sprintf("/hardwares/%s/status", uid)
+	if err := c.doPatchRequest(ctx, endpoint, patchData, contentType, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// DeleteHardware deletes a Hardware by UID
+func (c *Client) DeleteHardware(ctx context.Context, uid string) error {
+	endpoint := fmt.Sprintf("/hardwares/%s", uid)
+	var response DeleteResponse
+	if err := c.doRequest(ctx, "DELETE", endpoint, nil, &response); err != nil {
+		return err
+	}
+	return nil
+}
+
 // GetRedfishEndpoints retrieves all redfishendpoints
 func (c *Client) GetRedfishEndpoints(ctx context.Context) ([]v1.RedfishEndpoint, error) {
 	var response []v1.RedfishEndpoint

@@ -68,6 +68,16 @@ func RegisterProtectedCsmRoutes(r chi.Router) {
 			r.Delete("/", DeleteComponentEndpointCsm)
 		})
 	})
+	// Hardware inventory routes
+	r.Route("/hsm/v2/Inventory/Hardware", func(r chi.Router) {
+		r.Get("/", GetHardwaresCsm)
+		r.Post("/", CreateHardwareCsm)
+		r.Route("/{id}", func(r chi.Router) {
+			r.Get("/", GetHardwareCsm)
+			r.Put("/", UpdateHardwareCsm)
+			r.Delete("/", DeleteHardwareCsm)
+		})
+	})
 	// ServiceEndpoint routes
 	r.Route("/hsm/v2/Inventory/ServiceEndpoints", func(r chi.Router) {
 		r.Get("/", GetServiceEndpointsCsm)

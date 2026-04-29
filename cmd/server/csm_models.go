@@ -15,6 +15,10 @@ type ComponentEndpointArray struct {
 	ComponentEndpoints []*v1.ComponentEndpointSpec `json:"ComponentEndpoints"`
 }
 
+type HardwareArray struct {
+	Hardware []*v1.HardwareSpec `json:"Hardware"`
+}
+
 type EthernetInterfaceArray struct {
 	EthernetInterfaces []*v1.EthernetInterfaceSpec `json:"EthernetInterfaces"`
 }

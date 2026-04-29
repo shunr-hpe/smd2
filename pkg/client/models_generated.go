@@ -102,6 +102,22 @@ type UpdateGroupRequest struct {
 	Annotations map[string]string `json:"annotations,omitempty"`
 }
 
+// CreateHardwareRequest represents a request to create a Hardware
+type CreateHardwareRequest struct {
+	Metadata    fabrica.Metadata  `json:"metadata" validate:"required"`
+	Spec        v1.HardwareSpec   `json:"spec" validate:"required"`
+	Labels      map[string]string `json:"labels,omitempty"`
+	Annotations map[string]string `json:"annotations,omitempty"`
+}
+
+// UpdateHardwareRequest represents a request to update a Hardware
+type UpdateHardwareRequest struct {
+	Metadata    fabrica.Metadata  `json:"metadata,omitempty"`
+	Spec        v1.HardwareSpec   `json:"spec,omitempty" validate:"omitempty"`
+	Labels      map[string]string `json:"labels,omitempty"`
+	Annotations map[string]string `json:"annotations,omitempty"`
+}
+
 // CreateRedfishEndpointRequest represents a request to create a RedfishEndpoint
 type CreateRedfishEndpointRequest struct {
 	Metadata    fabrica.Metadata       `json:"metadata" validate:"required"`

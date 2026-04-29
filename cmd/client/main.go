@@ -16,6 +16,7 @@
 //   - client componentendpoint [list|get|create|update|patch|delete]
 //   - client ethernetinterface [list|get|create|update|patch|delete]
 //   - client group [list|get|create|update|patch|delete]
+//   - client hardware [list|get|create|update|patch|delete]
 //   - client redfishendpoint [list|get|create|update|patch|delete]
 //   - client serviceendpoint [list|get|create|update|patch|delete]
 //
@@ -129,6 +130,7 @@ func init() {
 	rootCmd.AddCommand(componentendpointCmd)
 	rootCmd.AddCommand(ethernetinterfaceCmd)
 	rootCmd.AddCommand(groupCmd)
+	rootCmd.AddCommand(hardwareCmd)
 	rootCmd.AddCommand(redfishendpointCmd)
 	rootCmd.AddCommand(serviceendpointCmd)
 
@@ -654,7 +656,7 @@ Examples:
   client componentendpoint create --spec '{"description": "Example description", "ID": "example-value", "Type": "example-value", "Domain": "example-value", "FQDN": "example-value", "RedfishType": "example-value", "RedfishSubtype": "example-value", "MACAddr": "example-value", "UUID": "example-value", "OdataID": "example-value", "RedfishEndpointID": "example-value", "Enabled": true, "RedfishEndpointFQDN": "example-value", "RedfishURL": "https://example.com", "ComponentEndpointType": "example-value", "RedfishChassisInfo": "{}", "RedfishSystemInfo": "{}", "RedfishManagerInfo": "{}", "RedfishPDUInfo": "{}", "RedfishOutletInfo": {}}'
 
 Spec fields:
-  Description (string)
+  description (string)
   ID (string)
   Type (string)
   Domain (string)
@@ -1020,13 +1022,13 @@ var ethernetinterfaceCreateCmd = &cobra.Command{
 
 Examples:
   # Create from stdin
-  echo '{"description": "Example description", "ID": "example-value", "MACAddress": "example-value", "LastUpdate": "example-value", "ComponentID": "example-value", "Type": "example-value", "IPAddresses": ["[]"]}' | client ethernetinterface create
+  echo '{"Description": "Example description", "ID": "example-value", "MACAddress": "example-value", "LastUpdate": "example-value", "ComponentID": "example-value", "Type": "example-value", "IPAddresses": ["[]"]}' | client ethernetinterface create
 
   # Create with --spec flag
-  client ethernetinterface create --spec '{"description": "Example description", "ID": "example-value", "MACAddress": "example-value", "LastUpdate": "example-value", "ComponentID": "example-value", "Type": "example-value", "IPAddresses": ["[]"]}'
+  client ethernetinterface create --spec '{"Description": "Example description", "ID": "example-value", "MACAddress": "example-value", "LastUpdate": "example-value", "ComponentID": "example-value", "Type": "example-value", "IPAddresses": ["[]"]}'
 
 Spec fields:
-  description (string)
+  Description (string)
   ID (string)
   MACAddress (string)
   LastUpdate (string)
@@ -1076,13 +1078,13 @@ var ethernetinterfaceUpdateCmd = &cobra.Command{
 
 Examples:
   # Update from stdin
-  echo '{"description": "Example description", "ID": "example-value", "MACAddress": "example-value", "LastUpdate": "example-value", "ComponentID": "example-value", "Type": "example-value", "IPAddresses": ["[]"]}' | client ethernetinterface update <uid>
+  echo '{"Description": "Example description", "ID": "example-value", "MACAddress": "example-value", "LastUpdate": "example-value", "ComponentID": "example-value", "Type": "example-value", "IPAddresses": ["[]"]}' | client ethernetinterface update <uid>
 
   # Update with --spec flag
-  client ethernetinterface update <uid> --spec '{"description": "Example description", "ID": "example-value", "MACAddress": "example-value", "LastUpdate": "example-value", "ComponentID": "example-value", "Type": "example-value", "IPAddresses": ["[]"]}'
+  client ethernetinterface update <uid> --spec '{"Description": "Example description", "ID": "example-value", "MACAddress": "example-value", "LastUpdate": "example-value", "ComponentID": "example-value", "Type": "example-value", "IPAddresses": ["[]"]}'
 
 Spec fields:
-  description (string)
+  Description (string)
   ID (string)
   MACAddress (string)
   LastUpdate (string)
@@ -1649,6 +1651,396 @@ func init() {
 	groupPatchCmd.Flags().StringArray("unset", nil, "Unset field using dot notation")
 	groupPatchCmd.Flags().StringArray("add", nil, "Add value to array field (field=value)")
 	groupPatchCmd.Flags().StringArray("remove", nil, "Remove value from array field (field=value)")
+}
+
+// Hardware commands
+var hardwareCmd = &cobra.Command{
+	Use:   "hardware",
+	Short: "Manage hardwares",
+	Long:  `Create, read, update, patch, and delete hardwares.`,
+}
+
+var hardwareListCmd = &cobra.Command{
+	Use:   "list",
+	Short: "List all hardwares",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		c, err := getClient()
+		if err != nil {
+			return fmt.Errorf("failed to create client: %w", err)
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+
+		items, err := c.GetHardwares(ctx)
+		if err != nil {
+			return fmt.Errorf("failed to list hardwares: %w", err)
+		}
+
+		return printOutput(items)
+	},
+}
+
+var hardwareGetCmd = &cobra.Command{
+	Use:   "get [uid]",
+	Short: "Get a Hardware by UID",
+	Args:  cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		c, err := getClient()
+		if err != nil {
+			return fmt.Errorf("failed to create client: %w", err)
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+
+		item, err := c.GetHardware(ctx, args[0])
+		if err != nil {
+			return fmt.Errorf("failed to get Hardware: %w", err)
+		}
+
+		return printOutput(item)
+	},
+}
+
+var hardwareCreateCmd = &cobra.Command{
+	Use:   "create",
+	Short: "Create a new Hardware",
+	Long: `Create a new Hardware.
+
+Examples:
+  # Create from stdin
+  echo '{"description": "Example description", "ID": "example-value", "Type": "example-value", "Ordinal": 42, "Status": "example-value", "HWInventoryByLocationType": "DataCenter A", "CabinetLocationInfo": "{}", "ChassisLocationInfo": "{}", "ComputeModuleLocationInfo": "{}", "RouterModuleLocationInfo": "{}", "NodeEnclosureLocationInfo": "{}", "HSNBoardLocationInfo": "{}", "MgmtSwitchLocationInfo": "{}", "MgmtHLSwitchLocationInfo": "{}", "CDUMgmtSwitchLocationInfo": "{}", "NodeLocationInfo": "{}", "ProcessorLocationInfo": "{}", "NodeAccelLocationInfo": "{}", "MemoryLocationInfo": "{}", "DriveLocationInfo": "{}", "NodeHsnNicLocationInfo": "{}", "PDULocationInfo": "{}", "OutletLocationInfo": "{}", "CMMRectifierLocationInfo": "{}", "NodeEnclosurePowerSupplyLocationInfo": "{}", "NodeBMCLocationInfo": "{}", "RouterBMCLocationInfo": "{}", "NodeAccelRiserLocationInfo": "{}", "PopulatedFRU": "{}"}' | client hardware create
+
+  # Create with --spec flag
+  client hardware create --spec '{"description": "Example description", "ID": "example-value", "Type": "example-value", "Ordinal": 42, "Status": "example-value", "HWInventoryByLocationType": "DataCenter A", "CabinetLocationInfo": "{}", "ChassisLocationInfo": "{}", "ComputeModuleLocationInfo": "{}", "RouterModuleLocationInfo": "{}", "NodeEnclosureLocationInfo": "{}", "HSNBoardLocationInfo": "{}", "MgmtSwitchLocationInfo": "{}", "MgmtHLSwitchLocationInfo": "{}", "CDUMgmtSwitchLocationInfo": "{}", "NodeLocationInfo": "{}", "ProcessorLocationInfo": "{}", "NodeAccelLocationInfo": "{}", "MemoryLocationInfo": "{}", "DriveLocationInfo": "{}", "NodeHsnNicLocationInfo": "{}", "PDULocationInfo": "{}", "OutletLocationInfo": "{}", "CMMRectifierLocationInfo": "{}", "NodeEnclosurePowerSupplyLocationInfo": "{}", "NodeBMCLocationInfo": "{}", "RouterBMCLocationInfo": "{}", "NodeAccelRiserLocationInfo": "{}", "PopulatedFRU": "{}"}'
+
+Spec fields:
+  description (string)
+  ID (string)
+  Type (string)
+  Ordinal (int)
+  Status (string)
+  HWInventoryByLocationType (string)
+  CabinetLocationInfo (*v1.ChassisLocationInfoRF)
+  ChassisLocationInfo (*v1.ChassisLocationInfoRF)
+  ComputeModuleLocationInfo (*v1.ChassisLocationInfoRF)
+  RouterModuleLocationInfo (*v1.ChassisLocationInfoRF)
+  NodeEnclosureLocationInfo (*v1.ChassisLocationInfoRF)
+  HSNBoardLocationInfo (*v1.ChassisLocationInfoRF)
+  MgmtSwitchLocationInfo (*v1.ChassisLocationInfoRF)
+  MgmtHLSwitchLocationInfo (*v1.ChassisLocationInfoRF)
+  CDUMgmtSwitchLocationInfo (*v1.ChassisLocationInfoRF)
+  NodeLocationInfo (*v1.SystemLocationInfoRF)
+  ProcessorLocationInfo (*v1.ProcessorLocationInfoRF)
+  NodeAccelLocationInfo (*v1.ProcessorLocationInfoRF)
+  MemoryLocationInfo (*v1.MemoryLocationInfoRF)
+  DriveLocationInfo (*v1.DriveLocationInfoRF)
+  NodeHsnNicLocationInfo (*v1.NALocationInfoRF)
+  PDULocationInfo (*v1.PowerDistributionLocationInfo)
+  OutletLocationInfo (*v1.OutletLocationInfo)
+  CMMRectifierLocationInfo (*v1.PowerSupplyLocationInfoRF)
+  NodeEnclosurePowerSupplyLocationInfo (*v1.PowerSupplyLocationInfoRF)
+  NodeBMCLocationInfo (*v1.ManagerLocationInfoRF)
+  RouterBMCLocationInfo (*v1.ManagerLocationInfoRF)
+  NodeAccelRiserLocationInfo (*v1.NodeAccelRiserLocationInfoRF)
+  PopulatedFRU (*v1.HWInvByFRU)
+`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		c, err := getClient()
+		if err != nil {
+			return fmt.Errorf("failed to create client: %w", err)
+		}
+
+		// Read request from flags or stdin
+		reqJSON, _ := cmd.Flags().GetString("spec")
+		var req client.CreateHardwareRequest
+
+		if reqJSON == "" {
+			// Read from stdin if no spec provided
+			decoder := json.NewDecoder(os.Stdin)
+			if err := decoder.Decode(&req); err != nil {
+				return fmt.Errorf("failed to decode request from stdin: %w", err)
+			}
+		} else {
+			// Parse request from JSON string
+			if err := json.Unmarshal([]byte(reqJSON), &req); err != nil {
+				return fmt.Errorf("failed to parse request JSON: %w", err)
+			}
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+
+		item, err := c.CreateHardware(ctx, req)
+		if err != nil {
+			return fmt.Errorf("failed to create Hardware: %w", err)
+		}
+
+		return printOutput(item)
+	},
+}
+
+var hardwareUpdateCmd = &cobra.Command{
+	Use:   "update [uid]",
+	Short: "Update an existing Hardware",
+	Long: `Update an existing Hardware.
+
+Examples:
+  # Update from stdin
+  echo '{"description": "Example description", "ID": "example-value", "Type": "example-value", "Ordinal": 42, "Status": "example-value", "HWInventoryByLocationType": "DataCenter A", "CabinetLocationInfo": "{}", "ChassisLocationInfo": "{}", "ComputeModuleLocationInfo": "{}", "RouterModuleLocationInfo": "{}", "NodeEnclosureLocationInfo": "{}", "HSNBoardLocationInfo": "{}", "MgmtSwitchLocationInfo": "{}", "MgmtHLSwitchLocationInfo": "{}", "CDUMgmtSwitchLocationInfo": "{}", "NodeLocationInfo": "{}", "ProcessorLocationInfo": "{}", "NodeAccelLocationInfo": "{}", "MemoryLocationInfo": "{}", "DriveLocationInfo": "{}", "NodeHsnNicLocationInfo": "{}", "PDULocationInfo": "{}", "OutletLocationInfo": "{}", "CMMRectifierLocationInfo": "{}", "NodeEnclosurePowerSupplyLocationInfo": "{}", "NodeBMCLocationInfo": "{}", "RouterBMCLocationInfo": "{}", "NodeAccelRiserLocationInfo": "{}", "PopulatedFRU": "{}"}' | client hardware update <uid>
+
+  # Update with --spec flag
+  client hardware update <uid> --spec '{"description": "Example description", "ID": "example-value", "Type": "example-value", "Ordinal": 42, "Status": "example-value", "HWInventoryByLocationType": "DataCenter A", "CabinetLocationInfo": "{}", "ChassisLocationInfo": "{}", "ComputeModuleLocationInfo": "{}", "RouterModuleLocationInfo": "{}", "NodeEnclosureLocationInfo": "{}", "HSNBoardLocationInfo": "{}", "MgmtSwitchLocationInfo": "{}", "MgmtHLSwitchLocationInfo": "{}", "CDUMgmtSwitchLocationInfo": "{}", "NodeLocationInfo": "{}", "ProcessorLocationInfo": "{}", "NodeAccelLocationInfo": "{}", "MemoryLocationInfo": "{}", "DriveLocationInfo": "{}", "NodeHsnNicLocationInfo": "{}", "PDULocationInfo": "{}", "OutletLocationInfo": "{}", "CMMRectifierLocationInfo": "{}", "NodeEnclosurePowerSupplyLocationInfo": "{}", "NodeBMCLocationInfo": "{}", "RouterBMCLocationInfo": "{}", "NodeAccelRiserLocationInfo": "{}", "PopulatedFRU": "{}"}'
+
+Spec fields:
+  description (string)
+  ID (string)
+  Type (string)
+  Ordinal (int)
+  Status (string)
+  HWInventoryByLocationType (string)
+  CabinetLocationInfo (*v1.ChassisLocationInfoRF)
+  ChassisLocationInfo (*v1.ChassisLocationInfoRF)
+  ComputeModuleLocationInfo (*v1.ChassisLocationInfoRF)
+  RouterModuleLocationInfo (*v1.ChassisLocationInfoRF)
+  NodeEnclosureLocationInfo (*v1.ChassisLocationInfoRF)
+  HSNBoardLocationInfo (*v1.ChassisLocationInfoRF)
+  MgmtSwitchLocationInfo (*v1.ChassisLocationInfoRF)
+  MgmtHLSwitchLocationInfo (*v1.ChassisLocationInfoRF)
+  CDUMgmtSwitchLocationInfo (*v1.ChassisLocationInfoRF)
+  NodeLocationInfo (*v1.SystemLocationInfoRF)
+  ProcessorLocationInfo (*v1.ProcessorLocationInfoRF)
+  NodeAccelLocationInfo (*v1.ProcessorLocationInfoRF)
+  MemoryLocationInfo (*v1.MemoryLocationInfoRF)
+  DriveLocationInfo (*v1.DriveLocationInfoRF)
+  NodeHsnNicLocationInfo (*v1.NALocationInfoRF)
+  PDULocationInfo (*v1.PowerDistributionLocationInfo)
+  OutletLocationInfo (*v1.OutletLocationInfo)
+  CMMRectifierLocationInfo (*v1.PowerSupplyLocationInfoRF)
+  NodeEnclosurePowerSupplyLocationInfo (*v1.PowerSupplyLocationInfoRF)
+  NodeBMCLocationInfo (*v1.ManagerLocationInfoRF)
+  RouterBMCLocationInfo (*v1.ManagerLocationInfoRF)
+  NodeAccelRiserLocationInfo (*v1.NodeAccelRiserLocationInfoRF)
+  PopulatedFRU (*v1.HWInvByFRU)
+`,
+	Args: cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		c, err := getClient()
+		if err != nil {
+			return fmt.Errorf("failed to create client: %w", err)
+		}
+
+		// Read request from flags or stdin
+		reqJSON, _ := cmd.Flags().GetString("spec")
+		var req client.UpdateHardwareRequest
+
+		if reqJSON == "" {
+			// Read from stdin if no spec provided
+			decoder := json.NewDecoder(os.Stdin)
+			if err := decoder.Decode(&req); err != nil {
+				return fmt.Errorf("failed to decode request from stdin: %w", err)
+			}
+		} else {
+			// Parse request from JSON string
+			if err := json.Unmarshal([]byte(reqJSON), &req); err != nil {
+				return fmt.Errorf("failed to parse request JSON: %w", err)
+			}
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+
+		item, err := c.UpdateHardware(ctx, args[0], req)
+		if err != nil {
+			return fmt.Errorf("failed to update Hardware: %w", err)
+		}
+
+		return printOutput(item)
+	},
+}
+
+var hardwarePatchCmd = &cobra.Command{
+	Use:   "patch [uid]",
+	Short: "Patch a Hardware",
+	Long: `Patch an existing Hardware spec using various patch formats.
+
+IMPORTANT: Only the spec portion of the resource can be patched.
+Metadata (name, labels, annotations) and status are managed by the API.
+
+Examples:
+  # JSON Merge Patch (simple merge) - patch spec fields
+  client hardware patch <uid> --spec '{"manufacturer":"Intel","model":"Updated Model"}'
+
+  # Shorthand patch (dot notation - most convenient)
+  client hardware patch <uid> --set manufacturer=Intel --set model="Updated Model" --unset customField
+
+  # JSON Patch (RFC 6902 - most powerful)
+  client hardware patch <uid> --json-patch '[
+    {"op":"replace","path":"/manufacturer","value":"Intel"},
+    {"op":"add","path":"/properties/newField","value":"newValue"}
+  ]'
+
+  # From stdin (JSON Merge Patch format)
+  echo '{"manufacturer":"AMD","partNumber":"RYZEN-9000"}' | client hardware patch <uid>
+
+Patch Formats:
+  --spec        JSON Merge Patch (RFC 7386) - simple object merge
+  --set/--unset Shorthand patch - dot notation for convenience
+  --json-patch  JSON Patch (RFC 6902) - operation-based patches
+  stdin         JSON Merge Patch format
+
+Shorthand Operations (spec fields only):
+  --set field=value     Set a spec field value (supports dot notation)
+  --unset field         Remove a spec field (supports dot notation)
+  --add field=value     Add to spec array field (field must end with '.-')
+  --remove field=value  Remove from spec array field
+
+Note: All patch operations target the resource spec only.
+Attempts to patch metadata or status fields will be ignored.`,
+	Args: cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		c, err := getClient()
+		if err != nil {
+			return fmt.Errorf("failed to create client: %w", err)
+		}
+
+		uid := args[0]
+
+		// Get patch flags
+		specPatch, _ := cmd.Flags().GetString("spec")
+		jsonPatch, _ := cmd.Flags().GetString("json-patch")
+		setPairs, _ := cmd.Flags().GetStringArray("set")
+		unsetFields, _ := cmd.Flags().GetStringArray("unset")
+		addPairs, _ := cmd.Flags().GetStringArray("add")
+		removePairs, _ := cmd.Flags().GetStringArray("remove")
+
+		var patchData []byte
+		var contentType string
+
+		// Determine patch format and build patch data
+		if jsonPatch != "" {
+			// JSON Patch (RFC 6902)
+			patchData = []byte(jsonPatch)
+			contentType = "application/json-patch+json"
+		} else if len(setPairs) > 0 || len(unsetFields) > 0 || len(addPairs) > 0 || len(removePairs) > 0 {
+			// Shorthand patch - convert to JSON Merge Patch
+			patch := make(map[string]interface{})
+
+			// Process --set flags
+			for _, setPair := range setPairs {
+				parts := strings.SplitN(setPair, "=", 2)
+				if len(parts) != 2 {
+					return fmt.Errorf("invalid --set format: %s (expected field=value)", setPair)
+				}
+				setNestedField(patch, parts[0], parts[1])
+			}
+
+			// Process --unset flags
+			for _, field := range unsetFields {
+				setNestedField(patch, field, nil)
+			}
+
+			// Process --add flags (add to arrays)
+			for _, addPair := range addPairs {
+				parts := strings.SplitN(addPair, "=", 2)
+				if len(parts) != 2 {
+					return fmt.Errorf("invalid --add format: %s (expected field=value)", addPair)
+				}
+				// For arrays, we'll use JSON Merge Patch append syntax if possible
+				// Otherwise convert to JSON Patch
+				setNestedField(patch, parts[0], parts[1])
+			}
+
+			// Process --remove flags
+			for _, removePair := range removePairs {
+				parts := strings.SplitN(removePair, "=", 2)
+				if len(parts) != 2 {
+					return fmt.Errorf("invalid --remove format: %s (expected field=value)", removePair)
+				}
+				// Remove operations are complex and might need JSON Patch
+				// For now, we'll handle simple cases
+				return fmt.Errorf("--remove operations require --json-patch format")
+			}
+
+			patchBytes, err := json.Marshal(patch)
+			if err != nil {
+				return fmt.Errorf("failed to marshal shorthand patch: %w", err)
+			}
+			patchData = patchBytes
+			contentType = "application/merge-patch+json"
+		} else if specPatch != "" {
+			// JSON Merge Patch from --spec
+			patchData = []byte(specPatch)
+			contentType = "application/merge-patch+json"
+		} else {
+			// Read from stdin (default to JSON Merge Patch)
+			decoder := json.NewDecoder(os.Stdin)
+			var patch interface{}
+			if err := decoder.Decode(&patch); err != nil {
+				return fmt.Errorf("failed to decode patch from stdin: %w", err)
+			}
+			patchBytes, err := json.Marshal(patch)
+			if err != nil {
+				return fmt.Errorf("failed to marshal patch: %w", err)
+			}
+			patchData = patchBytes
+			contentType = "application/merge-patch+json"
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+
+		item, err := c.PatchHardware(ctx, uid, patchData, contentType)
+		if err != nil {
+			return fmt.Errorf("failed to patch Hardware: %w", err)
+		}
+
+		return printOutput(item)
+	},
+}
+
+var hardwareDeleteCmd = &cobra.Command{
+	Use:   "delete [uid]",
+	Short: "Delete a Hardware",
+	Args:  cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		c, err := getClient()
+		if err != nil {
+			return fmt.Errorf("failed to create client: %w", err)
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+
+		if err := c.DeleteHardware(ctx, args[0]); err != nil {
+			return fmt.Errorf("failed to delete Hardware: %w", err)
+		}
+
+		fmt.Printf("Hardware %s deleted successfully\n", args[0])
+		return nil
+	},
+}
+
+func init() {
+	hardwareCmd.AddCommand(hardwareListCmd)
+	hardwareCmd.AddCommand(hardwareGetCmd)
+	hardwareCmd.AddCommand(hardwareCreateCmd)
+	hardwareCmd.AddCommand(hardwareUpdateCmd)
+	hardwareCmd.AddCommand(hardwarePatchCmd)
+	hardwareCmd.AddCommand(hardwareDeleteCmd)
+
+	// Add spec flag for create and update commands
+	hardwareCreateCmd.Flags().String("spec", "", "Hardware specification in JSON format")
+	hardwareUpdateCmd.Flags().String("spec", "", "Hardware specification in JSON format")
+
+	// Add patch command flags
+	hardwarePatchCmd.Flags().String("spec", "", "JSON Merge Patch specification")
+	hardwarePatchCmd.Flags().String("json-patch", "", "JSON Patch operations (RFC 6902)")
+	hardwarePatchCmd.Flags().StringArray("set", nil, "Set field value using dot notation (field=value)")
+	hardwarePatchCmd.Flags().StringArray("unset", nil, "Unset field using dot notation")
+	hardwarePatchCmd.Flags().StringArray("add", nil, "Add value to array field (field=value)")
+	hardwarePatchCmd.Flags().StringArray("remove", nil, "Remove value from array field (field=value)")
 }
 
 // RedfishEndpoint commands

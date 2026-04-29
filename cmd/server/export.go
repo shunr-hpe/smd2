@@ -42,6 +42,7 @@ Examples:
   inventory_service export --kinds ComponentEndpoint --output ./componentendpoint-backup
   inventory_service export --kinds EthernetInterface --output ./ethernetinterface-backup
   inventory_service export --kinds Group --output ./group-backup
+  inventory_service export --kinds Hardware --output ./hardware-backup
   inventory_service export --kinds RedfishEndpoint --output ./redfishendpoint-backup
   inventory_service export --kinds ServiceEndpoint --output ./serviceendpoint-backup
 `,
@@ -79,7 +80,7 @@ func runExport(ctx context.Context, format, output string, kinds []string, perTy
 		resourceKinds = kinds
 	} else {
 		// Export all known resource types
-		resourceKinds = []string{"Component", "ComponentEndpoint", "EthernetInterface", "Group", "RedfishEndpoint", "ServiceEndpoint"}
+		resourceKinds = []string{"Component", "ComponentEndpoint", "EthernetInterface", "Group", "Hardware", "RedfishEndpoint", "ServiceEndpoint"}
 	}
 
 	totalExported := 0
@@ -131,6 +132,14 @@ func exportResourceKind(ctx context.Context, kind, output, format string, perTyp
 		items, e := storage.Querygroups(ctx).All(ctx)
 		if e != nil {
 			return 0, fmt.Errorf("failed to query groups: %w", e)
+		}
+		for _, item := range items {
+			resources = append(resources, item)
+		}
+	case "Hardware":
+		items, e := storage.Queryhardwares(ctx).All(ctx)
+		if e != nil {
+			return 0, fmt.Errorf("failed to query hardwares: %w", e)
 		}
 		for _, item := range items {
 			resources = append(resources, item)

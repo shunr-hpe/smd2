@@ -16,6 +16,7 @@
 //   - /componentendpoints (ComponentEndpoint operations)
 //   - /ethernetinterfaces (EthernetInterface operations)
 //   - /groups (Group operations)
+//   - /hardwares (Hardware operations)
 //   - /redfishendpoints (RedfishEndpoint operations)
 //   - /serviceendpoints (ServiceEndpoint operations)
 //
@@ -54,6 +55,8 @@ func registerResourcePrefixes() error {
 	resource.RegisterResourcePrefix("EthernetInterface", "ethernetinterface")
 
 	resource.RegisterResourcePrefix("Group", "group")
+
+	resource.RegisterResourcePrefix("Hardware", "hardware")
 
 	resource.RegisterResourcePrefix("RedfishEndpoint", "redfishendpoint")
 
@@ -143,6 +146,24 @@ func RegisterGeneratedRoutes(r chi.Router) {
 				r.Route("/status", func(r chi.Router) {
 					r.Put("/", UpdateGroupStatus)
 					r.Patch("/", PatchGroupStatus)
+				})
+			})
+		})
+
+		// Hardware routes
+		protected.Route("/hardwares", func(r chi.Router) {
+			r.Get("/", GetHardwares)
+			r.Post("/", CreateHardware)
+			r.Route("/{uid}", func(r chi.Router) {
+				r.Get("/", GetHardware)
+				r.Put("/", UpdateHardware)
+				r.Patch("/", PatchHardware)
+				r.Delete("/", DeleteHardware)
+
+				// Status subresource
+				r.Route("/status", func(r chi.Router) {
+					r.Put("/", UpdateHardwareStatus)
+					r.Patch("/", PatchHardwareStatus)
 				})
 			})
 		})

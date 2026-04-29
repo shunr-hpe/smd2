@@ -37,8 +37,9 @@ import (
 	"fmt"
 	"net/http"
 
-	v1 "github.com/OpenCHAMI/inventory-service/apis/inventory-service.openchami.org/v1"
 	"github.com/openchami/fabrica/pkg/fabrica"
+
+	v1 "github.com/OpenCHAMI/inventory-service/apis/inventory-service.openchami.org/v1"
 )
 
 // ComponentResponse represents the response for Component operations
@@ -154,6 +155,35 @@ type UpdateGroupRequest struct {
 
 // AsSpec converts the request fields to a spec object
 func (r *UpdateGroupRequest) AsSpec() v1.GroupSpec {
+	return r.Spec
+}
+
+// HardwareResponse represents the response for Hardware operations
+type HardwareResponse = v1.Hardware
+
+// CreateHardwareRequest represents a request to create a Hardware
+type CreateHardwareRequest struct {
+	Metadata    fabrica.Metadata  `json:"metadata" validate:"required"`
+	Spec        v1.HardwareSpec   `json:"spec" validate:"required"`
+	Labels      map[string]string `json:"labels,omitempty"`
+	Annotations map[string]string `json:"annotations,omitempty"`
+}
+
+// AsSpec converts the request fields to a spec object
+func (r *CreateHardwareRequest) AsSpec() v1.HardwareSpec {
+	return r.Spec
+}
+
+// UpdateHardwareRequest represents a request to update a Hardware
+type UpdateHardwareRequest struct {
+	Metadata    fabrica.Metadata  `json:"metadata,omitempty"`
+	Spec        v1.HardwareSpec   `json:"spec,omitempty" validate:"omitempty"`
+	Labels      map[string]string `json:"labels,omitempty"`
+	Annotations map[string]string `json:"annotations,omitempty"`
+}
+
+// AsSpec converts the request fields to a spec object
+func (r *UpdateHardwareRequest) AsSpec() v1.HardwareSpec {
 	return r.Spec
 }
 

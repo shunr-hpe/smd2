@@ -286,6 +286,37 @@ func importFile(ctx context.Context, path string, mode string, dryRun bool) (imp
 			}
 		}
 		return 1, 0, nil
+	case "Hardware":
+		var res *v1.Hardware
+		if ext == ".json" {
+			if err := json.Unmarshal(data, &res); err != nil {
+				return 0, 0, fmt.Errorf("failed to unmarshal Hardware: %w", err)
+			}
+		} else {
+			if err := yaml.Unmarshal(data, &res); err != nil {
+				return 0, 0, fmt.Errorf("failed to unmarshal Hardware: %w", err)
+			}
+		}
+
+		// Check if resource exists
+		existing, err := storage.GetHardwareByUID(ctx, res.Metadata.UID)
+		if err == nil && existing != nil {
+			// Resource exists
+			if mode == "skip" {
+				fmt.Printf("  ⊘ %s (exists)\n", filepath.Base(path))
+				return 0, 1, nil
+			}
+			fmt.Printf("  ⟳ %s (updating)\n", filepath.Base(path))
+		} else {
+			fmt.Printf("  ✓ %s (creating)\n", filepath.Base(path))
+		}
+
+		if !dryRun {
+			if err := storage.SaveHardware(ctx, res); err != nil {
+				return 0, 0, fmt.Errorf("failed to save Hardware: %w", err)
+			}
+		}
+		return 1, 0, nil
 	case "RedfishEndpoint":
 		var res *v1.RedfishEndpoint
 		if ext == ".json" {
@@ -392,6 +423,16 @@ func deleteAllResources(ctx context.Context) error {
 	for _, item := range groupItems {
 		if err := plugins.Store.DeleteGroup(ctx, item.UID); err != nil {
 			return fmt.Errorf("failed to delete Group: %w", err)
+		}
+	}
+	// Delete all hardwares
+	hardwareItems, err := storage.Queryhardwares(ctx).All(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to query hardwares: %w", err)
+	}
+	for _, item := range hardwareItems {
+		if err := storage.DeleteHardware(ctx, item.UID); err != nil {
+			return fmt.Errorf("failed to delete Hardware: %w", err)
 		}
 	}
 	// Delete all redfishendpoints

@@ -235,6 +235,34 @@ func LoadServiceEndpointsByRedfishTypeAndID(ctx context.Context, redfishType str
 	return results, nil
 }
 
+func LoadHardwareByID(ctx context.Context, id string) (*v1.Hardware, error) {
+	if entClient == nil {
+		return nil, fmt.Errorf("ent client not initialized")
+	}
+
+	entResource, err := entClient.Resource.Query().
+		Where(
+			entresource.KindEQ("Hardware"),
+			entresource.ResourceIDEQ(id),
+		).
+		WithLabels().
+		WithAnnotations().
+		Only(ctx)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, ErrNotFound
+		}
+		return nil, fmt.Errorf("failed to load Hardware with ID %s: %w", id, err)
+	}
+
+	fabricaResource, err := FromEntResource(ctx, entResource)
+	if err != nil {
+		return nil, err
+	}
+
+	return fabricaResource.(*v1.Hardware), nil
+}
+
 func LoadGroupByLabel(ctx context.Context, label string) (*v1.Group, error) {
 	if entClient == nil {
 		return nil, fmt.Errorf("ent client not initialized")
