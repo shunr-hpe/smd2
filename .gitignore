@@ -39,3 +39,6 @@ data-resttests/
 *~
 
 **/.env
+
+# go releaser
+dist/

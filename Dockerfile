@@ -20,7 +20,7 @@ RUN groupadd -g 1000 smd && \
 
 WORKDIR /home/smd
 
-COPY bin/inventory-service /usr/local/bin/inventory-service
+COPY inventory-service /usr/local/bin/inventory-service
 
 RUN chown -R smd:smd /home/smd
 

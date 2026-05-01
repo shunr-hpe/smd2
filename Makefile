@@ -34,7 +34,19 @@ $(BINARY_DIR)/$(BINARY_NAME): $(GO_FILES)
 	@echo "Building $(BINARY_NAME)..."
 	@mkdir -p $(BINARY_DIR)
 	go build $(LDFLAGS) -o $(BINARY_DIR)/$(BINARY_NAME)-service ./cmd/server/
-	go build $(LDFLAGS) -o $(BINARY_DIR)/$(BINARY_NAME)-cli ./cmd/client/
+	go build $(LDFLAGS) -o $(BINARY_DIR)/$(BINARY_NAME)-service-client ./cmd/client/
+
+.PHONY: goreleaser
+goreleaser: GIT_STATE := $(shell if git diff-index --quiet HEAD --; then echo 'clean'; else echo 'dirty'; fi)
+goreleaser: BUILD_HOST := $(shell hostname)
+goreleaser: GO_VERSION := $(shell go version | awk '{print $$3}')
+goreleaser: BUILD_USER := $(shell whoami)
+goreleaser:
+	@echo "GIT_STATE: $(GIT_STATE)"
+	@echo "BUILD_HOST: $(BUILD_HOST)"
+	@echo "GO_VERSION: $(GO_VERSION)"
+	@echo "BUILD_USER: $(BUILD_USER)"
+	goreleaser release --snapshot --clean
 
 # Clean build artifacts
 .PHONY: clean
@@ -42,6 +54,7 @@ clean:
 	@echo "Cleaning build artifacts..."
 	rm -rf $(BINARY_DIR)
 	rm -rf data
+	rm -rf dist
 	rm -rf data-resttests
 	rm -f coverage.out coverage.html
 
@@ -49,7 +62,7 @@ clean:
 .PHONY: image
 image: build
 	@echo "Building container image..."
-	$(CONTAINER_CMD) build -t $(BINARY_NAME)-service:latest .
+	$(CONTAINER_CMD) build -f Dockerfile -t $(BINARY_NAME)-service:latest bin
 
 .PHONY: unittest
 unittest:

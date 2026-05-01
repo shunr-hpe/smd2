@@ -1,0 +1,118 @@
+# SPDX-FileCopyrightText: Copyright © 2026 OpenCHAMI a Series of LF Projects, LLC
+#
+# SPDX-License-Identifier: MIT
+# GoReleaser configuration for inventory-service
+
+version: 2
+
+before:
+  hooks:
+    - go mod download
+
+builds:
+  - id: inventory-service
+    main: ./cmd/server
+    binary: inventory-service
+    env:
+      - CGO_ENABLED=1
+    goos:
+      - linux
+    goarch:
+      - amd64
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commit={{.Commit}}
+      - -X main.date={{.Date}}
+    flags:
+      - -trimpath
+
+archives:
+  - id: inventory-service-archives
+    builds:
+      - inventory-service
+    format: tar.gz
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- .Version }}_
+      {{- .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+    files:
+      - README.md
+
+checksum:
+  name_template: 'checksums_{{ .Version }}.txt'
+  algorithm: sha256
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^ci:'
+      - '^chore:'
+      - Merge pull request
+      - Merge branch
+
+dockers:
+  - id: inventory-service-amd64
+    ids: [inventory-service]
+    goos: linux
+    goarch: amd64
+    image_templates:
+      - "ghcr.io/openchami/inventory-service:{{ .Version }}-amd64"
+      - "ghcr.io/openchami/inventory-service:latest-amd64"
+    dockerfile: Dockerfile
+    use: buildx
+    build_flag_templates:
+      - "--platform=linux/amd64"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+      - "--label=org.opencontainers.image.source={{.GitURL}}"
+      - "--label=org.opencontainers.image.licenses=MIT"
+
+docker_manifests:
+  - name_template: "ghcr.io/openchami/inventory-service:{{ .Version }}"
+    image_templates:
+      - "ghcr.io/openchami/inventory-service:{{ .Version }}-amd64"
+
+  - name_template: "ghcr.io/openchami/inventory-service:latest"
+    image_templates:
+      - "ghcr.io/openchami/inventory-service:latest-amd64"
+
+release:
+  github:
+    owner: openchami
+    name: inventory-service
+  draft: false
+  prerelease: auto
+  mode: append
+  header: |
+    ## inventory-service {{ .Version }}
+
+    **Release Date:** {{ .Date }}
+
+    ### Installation
+
+    #### Docker
+    ```bash
+    docker pull ghcr.io/openchami/inventory-service:{{ .Version }}
+    ```
+
+    #### Go Install
+    ```bash
+    go install [github.com/openchami/inventory-service/cmd/server](https://github.com/openchami/inventory-service/cmd/server)@{{ .Tag }}
+    ```
+
+  footer: |
+    ---
+    **Full Changelog**: https://github.com/openchami/inventory-service/compare/{{ .PreviousTag }}...{{ .Tag }}
+
