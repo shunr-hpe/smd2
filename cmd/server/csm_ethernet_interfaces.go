@@ -110,7 +110,7 @@ func GetEthernetInterfaceCsm(w http.ResponseWriter, r *http.Request) {
 
 	ethernetInterface, err := plugins.Store.LoadEthernetInterfaceByID(r.Context(), id)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to load ethernetinterface %s: %w", id, err))
+		respondError(w, http.StatusNotFound, fmt.Errorf("failed to find ethernetinterface %s: %w", id, err))
 		return
 	}
 
@@ -185,7 +185,7 @@ func DeleteEthernetInterfaceCsm(w http.ResponseWriter, r *http.Request) {
 
 	ethernetInterface, err := plugins.Store.LoadEthernetInterfaceByID(r.Context(), id)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to load ethernetinterface %s: %w", id, err))
+		respondError(w, http.StatusNotFound, fmt.Errorf("failed to find ethernetinterface %s: %w", id, err))
 		return
 	}
 

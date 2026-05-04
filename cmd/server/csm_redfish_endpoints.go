@@ -61,7 +61,7 @@ func GetRedfishEndpointCsm(w http.ResponseWriter, r *http.Request) {
 
 	redfishEndpoint, err := plugins.Store.LoadRedfishEndpointByID(r.Context(), id)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to load redfishEndpoint %s: %w", id, err))
+		respondError(w, http.StatusNotFound, fmt.Errorf("failed to find redfishEndpoint %s: %w", id, err))
 		return
 	}
 
@@ -253,7 +253,7 @@ func DeleteRedfishEndpointV2(w http.ResponseWriter, r *http.Request) {
 
 	redfishEndpoint, err := plugins.Store.LoadRedfishEndpointByID(r.Context(), id)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to load redfishEndpoint %s: %w", id, err))
+		respondError(w, http.StatusNotFound, fmt.Errorf("failed to find redfishEndpoint %s: %w", id, err))
 		return
 	}
 

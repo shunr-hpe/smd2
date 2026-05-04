@@ -43,7 +43,7 @@ func GetHardwareCsm(w http.ResponseWriter, r *http.Request) {
 
 	hardware, err := plugins.Store.LoadHardwareByID(r.Context(), id)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to load hardware %s: %w", id, err))
+		respondError(w, http.StatusNotFound, fmt.Errorf("failed to load hardware %s: %w", id, err))
 		return
 	}
 
@@ -167,7 +167,7 @@ func DeleteHardwareCsm(w http.ResponseWriter, r *http.Request) {
 
 	hardware, err := plugins.Store.LoadHardwareByID(r.Context(), id)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to load hardware %s: %w", id, err))
+		respondError(w, http.StatusNotFound, fmt.Errorf("failed to find hardware %s: %w", id, err))
 		return
 	}
 

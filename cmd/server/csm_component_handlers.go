@@ -70,7 +70,7 @@ func GetComponentCsm(w http.ResponseWriter, r *http.Request) {
 
 	component, err := plugins.Store.LoadComponentByID(r.Context(), id)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to component %s: %w", id, err))
+		respondError(w, http.StatusNotFound, fmt.Errorf("failed to find component %s: %w", id, err))
 		return
 	}
 
@@ -233,7 +233,7 @@ func DeleteComponentCsm(w http.ResponseWriter, r *http.Request) {
 
 	component, err := plugins.Store.LoadComponentByID(r.Context(), id)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to component %s: %w", id, err))
+		respondError(w, http.StatusNotFound, fmt.Errorf("failed to find component %s: %w", id, err))
 		return
 	}
 

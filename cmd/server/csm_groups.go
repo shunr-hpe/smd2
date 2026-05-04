@@ -102,7 +102,7 @@ func GetGroupCsm(w http.ResponseWriter, r *http.Request) {
 
 	group, err := plugins.Store.LoadGroupByLabel(r.Context(), label)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to load group %s: %w", label, err))
+		respondError(w, http.StatusNotFound, fmt.Errorf("failed to find group %s: %w", label, err))
 		return
 	}
 
@@ -177,7 +177,7 @@ func DeleteGroupCsm(w http.ResponseWriter, r *http.Request) {
 
 	group, err := plugins.Store.LoadGroupByLabel(r.Context(), label)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to load group %s: %w", label, err))
+		respondError(w, http.StatusNotFound, fmt.Errorf("failed to find group %s: %w", label, err))
 		return
 	}
 
