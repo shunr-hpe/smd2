@@ -56,7 +56,7 @@ func GetComponentEndpointCsm(w http.ResponseWriter, r *http.Request) {
 
 	componentEndpoint, err := plugins.Store.LoadComponentEndpointByID(r.Context(), id)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to load componentEndpoint %s: %w", id, err))
+		respondError(w, http.StatusNotFound, fmt.Errorf("failed to find componentEndpoint %s: %w", id, err))
 		return
 	}
 
@@ -213,7 +213,7 @@ func DeleteComponentEndpointCsm(w http.ResponseWriter, r *http.Request) {
 
 	componentEndpoint, err := plugins.Store.LoadComponentEndpointByID(r.Context(), id)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to load componentEndpoint %s: %w", id, err))
+		respondError(w, http.StatusNotFound, fmt.Errorf("failed to find componentEndpoint %s: %w", id, err))
 		return
 	}
 
