@@ -209,12 +209,16 @@ func TestCsmEthernetInterface_InvalidMAC_Short(t *testing.T) {
 
 // TestCsmEthernetInterface_ValidMAC_Colon verifies that a colon-separated MAC
 // address passes the pattern constraint and is accepted.
+// Type must be a valid HMSType enum value and IPAddresses must be an array
+// (not null) because the struct always serialises those fields.
 func TestCsmEthernetInterface_ValidMAC_Colon(t *testing.T) {
 	resp := doRequest(t, http.MethodPost, "/ethernetinterfaces", map[string]interface{}{
 		"metadata": map[string]interface{}{"name": "a1:00:00:00:00:02"},
 		"spec": map[string]interface{}{
-			"ID":         "a1:00:00:00:00:02",
-			"MACAddress": "a1:00:00:00:00:02",
+			"ID":           "a1:00:00:00:00:02",
+			"MACAddress":   "a1:00:00:00:00:02",
+			"Type":         "Node",
+			"IPAddresses":  []interface{}{},
 		},
 	})
 	requireStatus(t, resp, http.StatusCreated)
@@ -227,8 +231,10 @@ func TestCsmEthernetInterface_ValidMAC_Hyphen(t *testing.T) {
 	resp := doRequest(t, http.MethodPost, "/ethernetinterfaces", map[string]interface{}{
 		"metadata": map[string]interface{}{"name": "a1-00-00-00-00-03"},
 		"spec": map[string]interface{}{
-			"ID":         "a1-00-00-00-00-03",
-			"MACAddress": "a1-00-00-00-00-03",
+			"ID":          "a1-00-00-00-00-03",
+			"MACAddress":  "a1-00-00-00-00-03",
+			"Type":        "Node",
+			"IPAddresses": []interface{}{},
 		},
 	})
 	requireStatus(t, resp, http.StatusCreated)
@@ -241,8 +247,10 @@ func TestCsmEthernetInterface_ValidMAC_NoSeparator(t *testing.T) {
 	resp := doRequest(t, http.MethodPost, "/ethernetinterfaces", map[string]interface{}{
 		"metadata": map[string]interface{}{"name": "a100000000ff"},
 		"spec": map[string]interface{}{
-			"ID":         "a100000000ff",
-			"MACAddress": "a100000000ff",
+			"ID":          "a100000000ff",
+			"MACAddress":  "a100000000ff",
+			"Type":        "Node",
+			"IPAddresses": []interface{}{},
 		},
 	})
 	requireStatus(t, resp, http.StatusCreated)
